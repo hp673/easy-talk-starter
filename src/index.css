@@ -2,40 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* MineTrak Design System - Industrial Mining Theme
+All colors MUST be HSL for proper contrast and accessibility.
+Optimized for sunlight readability and glove-friendly operation.
 */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
+    /* Mining-specific color palette - High contrast for sunlight */
+    --background: 0 0% 98%;
+    --foreground: 0 0% 15%;
+    
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
+    --card-foreground: 0 0% 15%;
+    
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
+    --popover-foreground: 0 0% 15%;
+    
+    /* Primary: Mining Blue - High contrast */
+    --primary: 217 91% 33%;
+    --primary-foreground: 0 0% 98%;
+    
+    /* Secondary: Mining Gray */
+    --secondary: 0 0% 40%;
+    --secondary-foreground: 0 0% 98%;
+    
+    /* Muted: Light grays for backgrounds */
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    
+    /* Accent: Mining blue lighter */
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 98%;
+    
+    /* Warning: Mining Yellow */
+    --warning: 43 96% 56%;
+    --warning-foreground: 0 0% 15%;
+    
+    /* Success: Mining Green */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 98%;
+    
+    /* Critical: High contrast red */
+    --destructive: 0 84% 45%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --border: 0 0% 90%;
+    --input: 0 0% 100%;
+    --ring: 217 91% 33%;
+    
+    /* Industrial radius for durability */
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
@@ -100,6 +118,67 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-inter;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  /* Industrial Touch Targets - 48px minimum for glove use */
+  .touch-target {
+    @apply min-h-12 min-w-12;
+  }
+  
+  /* High contrast buttons for sunlight readability */
+  .btn-mining {
+    @apply touch-target bg-primary text-primary-foreground font-medium rounded-lg 
+           shadow-lg hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring 
+           focus-visible:ring-offset-2 transition-colors;
+  }
+  
+  .btn-warning {
+    @apply touch-target bg-warning text-warning-foreground font-medium rounded-lg 
+           shadow-lg hover:bg-warning/90 focus-visible:ring-2 focus-visible:ring-ring 
+           focus-visible:ring-offset-2 transition-colors;
+  }
+  
+  .btn-critical {
+    @apply touch-target bg-destructive text-destructive-foreground font-medium rounded-lg 
+           shadow-lg hover:bg-destructive/90 focus-visible:ring-2 focus-visible:ring-ring 
+           focus-visible:ring-offset-2 transition-colors;
+  }
+  
+  /* Form sections with clear visual hierarchy */
+  .form-section {
+    @apply bg-card border border-border rounded-lg p-6 space-y-4 shadow-sm;
+  }
+  
+  /* Industrial input styling */
+  .input-mining {
+    @apply min-h-12 bg-input border border-border rounded-lg px-4 text-base
+           focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1
+           focus-visible:border-ring transition-colors;
+  }
+  
+  /* Status indicators */
+  .status-online {
+    @apply inline-flex items-center gap-2 bg-success/10 text-success px-3 py-1 rounded-full text-sm font-medium;
+  }
+  
+  .status-offline {
+    @apply inline-flex items-center gap-2 bg-muted text-muted-foreground px-3 py-1 rounded-full text-sm font-medium;
+  }
+  
+  .status-critical {
+    @apply inline-flex items-center gap-2 bg-destructive/10 text-destructive px-3 py-1 rounded-full text-sm font-medium;
+  }
+  
+  /* Progress indicators */
+  .progress-bar {
+    @apply w-full bg-muted rounded-full h-2 overflow-hidden;
+  }
+  
+  .progress-fill {
+    @apply h-full bg-primary transition-all duration-300 ease-out;
   }
 }
