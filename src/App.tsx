@@ -8,6 +8,7 @@ import { OfflineProvider } from "./contexts/OfflineContext";
 
 // Pages
 import LoginScreen from "./pages/LoginScreen";
+import OperatorDashboard from "./pages/OperatorDashboard";
 import EquipmentSelection from "./pages/EquipmentSelection";
 import InspectionForm from "./pages/InspectionForm";
 import DefectDocumentation from "./pages/DefectDocumentation";
@@ -30,6 +31,7 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<LoginScreen />} />
+              <Route path="/operator-dashboard" element={<OperatorDashboard />} />
               <Route path="/equipment-selection" element={<EquipmentSelection />} />
               <Route path="/inspection-form" element={<InspectionForm />} />
               <Route path="/defect-documentation" element={<DefectDocumentation />} />

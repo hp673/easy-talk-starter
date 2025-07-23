@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 interface User {
   id: string;
   name: string;
-  role: 'operator' | 'technician' | 'site_manager' | 'admin';
+  role: 'operator' | 'maintainer' | 'admin';
   pin: string;
 }
 
@@ -19,9 +19,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // Mock users for demonstration
 const mockUsers: User[] = [
   { id: 'OP001', name: 'OP001', role: 'operator', pin: '1234' },
-  { id: 'TECH002', name: 'TECH002', role: 'technician', pin: '5678' },
-  { id: 'MGR003', name: 'MGR003', role: 'site_manager', pin: '9999' },
-  { id: 'ADM004', name: 'ADM004', role: 'admin', pin: '0000' },
+  { id: 'MAINT002', name: 'MAINT002', role: 'maintainer', pin: '5678' },
+  { id: 'ADM003', name: 'ADM003', role: 'admin', pin: '0000' },
 ];
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

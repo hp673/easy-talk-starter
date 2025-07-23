@@ -56,19 +56,16 @@ const LoginScreen = () => {
         // Navigate based on user role
         switch (user?.role) {
           case 'operator':
-            navigate('/equipment-selection');
+            navigate('/operator-dashboard');
             break;
-          case 'technician':
+          case 'maintainer':
             navigate('/maintenance-dashboard');
-            break;
-          case 'site_manager':
-            navigate('/site-manager-dashboard');
             break;
           case 'admin':
             navigate('/admin-portal');
             break;
           default:
-            navigate('/equipment-selection');
+            navigate('/operator-dashboard');
         }
       } else {
         toast({
@@ -225,11 +222,10 @@ const LoginScreen = () => {
           <CardContent className="pt-6">
               <div className="text-xs space-y-2">
                 <p className="font-medium">Demo Credentials:</p>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div>OP001: 1234</div>
-                  <div>TECH002: 5678</div>
-                  <div>MGR003: 9999</div>
-                  <div>ADM004: 0000</div>
+                <div className="grid grid-cols-1 gap-2 text-xs">
+                  <div><strong>Operator:</strong> OP001: 1234</div>
+                  <div><strong>Maintainer:</strong> MAINT002: 5678</div>
+                  <div><strong>Admin:</strong> ADM003: 0000</div>
                 </div>
               </div>
           </CardContent>
