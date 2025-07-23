@@ -18,10 +18,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Mock users for demonstration
 const mockUsers: User[] = [
-  { id: '1', name: 'John Operator', role: 'operator', pin: '1234' },
-  { id: '2', name: 'Sarah Tech', role: 'technician', pin: '5678' },
-  { id: '3', name: 'Mike Manager', role: 'site_manager', pin: '9999' },
-  { id: '4', name: 'Admin User', role: 'admin', pin: '0000' },
+  { id: 'OP001', name: 'OP001', role: 'operator', pin: '1234' },
+  { id: 'TECH002', name: 'TECH002', role: 'technician', pin: '5678' },
+  { id: 'MGR003', name: 'MGR003', role: 'site_manager', pin: '9999' },
+  { id: 'ADM004', name: 'ADM004', role: 'admin', pin: '0000' },
 ];
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

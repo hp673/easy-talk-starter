@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from '@/hooks/use-toast';
 import { Wifi, WifiOff, User, Lock, Shield } from 'lucide-react';
 import { mockUsers } from '@/contexts/AuthContext';
+import miningEquipment from '@/assets/mining-equipment.jpg';
 
 const LoginScreen = () => {
   const [pin, setPin] = useState('');
@@ -88,13 +89,22 @@ const LoginScreen = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
-        {/* Header with status */}
+        {/* Header with mining image */}
         <div className="text-center space-y-4">
-          <div className="flex items-center justify-center">
-            <Shield className="h-12 w-12 text-primary mr-3" />
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">MineTrak</h1>
-              <p className="text-muted-foreground">Equipment Inspection System</p>
+          <div className="relative">
+            <img 
+              src={miningEquipment} 
+              alt="Mining Equipment" 
+              className="w-full h-48 object-cover rounded-lg shadow-lg"
+            />
+            <div className="absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center">
+              <div className="flex items-center text-white">
+                <Shield className="h-12 w-12 mr-3" />
+                <div>
+                  <h1 className="text-3xl font-bold">MineTrak</h1>
+                  <p className="text-white/80">Equipment Inspection System</p>
+                </div>
+              </div>
             </div>
           </div>
           
@@ -121,14 +131,14 @@ const LoginScreen = () => {
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="user-select">Select User</Label>
+                <Label htmlFor="user-select">User ID</Label>
                 <Select value={selectedUserId} onValueChange={setSelectedUserId}>
                   <SelectTrigger className="input-mining">
-                    <SelectValue placeholder="Choose your profile">
+                    <SelectValue placeholder="Select User ID">
                       {selectedUserId && (
                         <div className="flex items-center gap-2">
                           <User className="h-4 w-4" />
-                          {mockUsers.find(u => u.id === selectedUserId)?.name}
+                          {selectedUserId}
                         </div>
                       )}
                     </SelectValue>
@@ -139,7 +149,7 @@ const LoginScreen = () => {
                         <div className="flex items-center gap-2">
                           <User className="h-4 w-4" />
                           <div>
-                            <div className="font-medium">{user.name}</div>
+                            <div className="font-medium">{user.id}</div>
                             <div className="text-sm text-muted-foreground capitalize">
                               {user.role.replace('_', ' ')}
                             </div>
@@ -219,15 +229,15 @@ const LoginScreen = () => {
         {/* Demo Credentials */}
         <Card className="bg-muted/50">
           <CardContent className="pt-6">
-            <div className="text-xs space-y-2">
-              <p className="font-medium">Demo Credentials:</p>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div>Operator: 1234</div>
-                <div>Technician: 5678</div>
-                <div>Manager: 9999</div>
-                <div>Admin: 0000</div>
+              <div className="text-xs space-y-2">
+                <p className="font-medium">Demo Credentials:</p>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>OP001: 1234</div>
+                  <div>TECH002: 5678</div>
+                  <div>MGR003: 9999</div>
+                  <div>ADM004: 0000</div>
+                </div>
               </div>
-            </div>
           </CardContent>
         </Card>
       </div>
