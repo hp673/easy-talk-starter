@@ -14,7 +14,7 @@ import miningEquipment from '@/assets/mining-equipment.jpg';
 
 const LoginScreen = () => {
   const [pin, setPin] = useState('');
-  const [selectedUserId, setSelectedUserId] = useState('');
+  const [userId, setUserId] = useState('');
   const [showAdminReset, setShowAdminReset] = useState(false);
   const [loading, setLoading] = useState(false);
   
@@ -24,10 +24,21 @@ const LoginScreen = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedUserId || !pin) {
+    if (!userId || !pin) {
       toast({
         title: "Missing Information",
-        description: "Please select a user and enter PIN",
+        description: "Please enter User ID and PIN",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if user ID exists
+    const user = mockUsers.find(u => u.id === userId);
+    if (!user) {
+      toast({
+        title: "Invalid User ID",
+        description: "User ID not found. Please check and try again.",
         variant: "destructive",
       });
       return;
@@ -35,9 +46,8 @@ const LoginScreen = () => {
 
     setLoading(true);
     try {
-      const success = await login(pin, selectedUserId);
+      const success = await login(pin, userId);
       if (success) {
-        const user = mockUsers.find(u => u.id === selectedUserId);
         toast({
           title: "Login Successful",
           description: `Welcome back, ${user?.name}!`,
@@ -131,34 +141,18 @@ const LoginScreen = () => {
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="user-select">User ID</Label>
-                <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-                  <SelectTrigger className="input-mining">
-                    <SelectValue placeholder="Select User ID">
-                      {selectedUserId && (
-                        <div className="flex items-center gap-2">
-                          <User className="h-4 w-4" />
-                          {selectedUserId}
-                        </div>
-                      )}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {mockUsers.map((user) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        <div className="flex items-center gap-2">
-                          <User className="h-4 w-4" />
-                          <div>
-                            <div className="font-medium">{user.id}</div>
-                            <div className="text-sm text-muted-foreground capitalize">
-                              {user.role.replace('_', ' ')}
-                            </div>
-                          </div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="user-id">User ID</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="user-id"
+                    type="text"
+                    value={userId}
+                    onChange={(e) => setUserId(e.target.value)}
+                    className="input-mining pl-10"
+                    placeholder="Enter User ID"
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -182,7 +176,7 @@ const LoginScreen = () => {
               <Button
                 type="submit"
                 className="btn-mining w-full"
-                disabled={loading || !selectedUserId || !pin}
+                disabled={loading || !userId || !pin}
               >
                 {loading ? 'Signing In...' : 'Sign In'}
               </Button>
