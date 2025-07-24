@@ -4,11 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOffline } from '@/contexts/OfflineContext';
+import { NotificationDrawer } from '@/components/NotificationDrawer';
+import { DefectDetailView } from '@/components/DefectDetailView';
+import { RepairDocumentation } from '@/components/RepairDocumentation';
+import { MaintenanceHistory } from '@/components/MaintenanceHistory';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Wrench, AlertTriangle, Clock, CheckCircle, TrendingUp, 
-  Users, Wifi, WifiOff, LogOut, Filter 
+  Users, Wifi, WifiOff, LogOut, Filter, Bell, History,
+  Settings, Eye, FileText
 } from 'lucide-react';
 
 interface Ticket {
@@ -81,10 +88,15 @@ const MaintenanceDashboard = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [severityFilter, setSeverityFilter] = useState<string>('all');
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const [activeView, setActiveView] = useState<'dashboard' | 'defect-detail' | 'repair-doc'>('dashboard');
+  const [selectedEquipmentId, setSelectedEquipmentId] = useState<string>('');
+  const [notificationDrawerOpen, setNotificationDrawerOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('tickets');
   
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { isOnline } = useOffline();
+  const { toast } = useToast();
 
   // Simulate real-time updates
   useEffect(() => {
@@ -159,6 +171,51 @@ const MaintenanceDashboard = () => {
   const inProgressCount = tickets.filter(t => t.status === 'In Progress').length;
   const openCount = tickets.filter(t => t.status === 'Open').length;
 
+  const handleViewTicket = (equipmentId: string) => {
+    setSelectedEquipmentId(equipmentId);
+    setActiveView('defect-detail');
+    setNotificationDrawerOpen(false);
+  };
+
+  const handleStartRepair = () => {
+    setActiveView('repair-doc');
+  };
+
+  const handleCompleteRepair = () => {
+    // Update equipment status to Active
+    toast({
+      title: "Ticket Closed",
+      description: "Equipment status updated to Active",
+    });
+    setActiveView('dashboard');
+  };
+
+  const handleCloseViews = () => {
+    setActiveView('dashboard');
+    setSelectedEquipmentId('');
+  };
+
+  // Handle different views
+  if (activeView === 'defect-detail') {
+    return (
+      <DefectDetailView
+        equipmentId={selectedEquipmentId}
+        onClose={handleCloseViews}
+        onStartRepair={handleStartRepair}
+      />
+    );
+  }
+
+  if (activeView === 'repair-doc') {
+    return (
+      <RepairDocumentation
+        equipmentId={selectedEquipmentId}
+        onClose={handleCloseViews}
+        onComplete={handleCompleteRepair}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -175,6 +232,18 @@ const MaintenanceDashboard = () => {
           </div>
           
           <div className="flex items-center gap-4">
+            <Button 
+              variant="outline" 
+              onClick={() => setNotificationDrawerOpen(true)}
+              className="relative"
+            >
+              <Bell className="h-4 w-4 mr-2" />
+              Alerts
+              <Badge className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground text-xs px-1">
+                2
+              </Badge>
+            </Button>
+            
             {isOnline ? (
               <div className="status-online">
                 <Wifi className="h-4 w-4" />
@@ -247,110 +316,147 @@ const MaintenanceDashboard = () => {
           </Card>
         </div>
 
-        {/* Filters */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5" />
-              Filter Tickets
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Status</label>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="input-mining">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
-                    <SelectItem value="Open">Open</SelectItem>
-                    <SelectItem value="In Progress">In Progress</SelectItem>
-                    <SelectItem value="Pending Parts">Pending Parts</SelectItem>
-                    <SelectItem value="Completed">Completed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+        {/* Main Content Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="tickets" className="flex items-center gap-2">
+              <Wrench className="h-4 w-4" />
+              Active Tickets
+            </TabsTrigger>
+            <TabsTrigger value="history" className="flex items-center gap-2">
+              <History className="h-4 w-4" />
+              Maintenance History
+            </TabsTrigger>
+          </TabsList>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Severity</label>
-                <Select value={severityFilter} onValueChange={setSeverityFilter}>
-                  <SelectTrigger className="input-mining">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Severities</SelectItem>
-                    <SelectItem value="Critical">Critical</SelectItem>
-                    <SelectItem value="High">High</SelectItem>
-                    <SelectItem value="Medium">Medium</SelectItem>
-                    <SelectItem value="Low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          <TabsContent value="tickets" className="space-y-6">
+            {/* Filters */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Filter className="h-5 w-5" />
+                  Filter Tickets
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Status</label>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="input-mining">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Statuses</SelectItem>
+                        <SelectItem value="Open">Open</SelectItem>
+                        <SelectItem value="In Progress">In Progress</SelectItem>
+                        <SelectItem value="Pending Parts">Pending Parts</SelectItem>
+                        <SelectItem value="Completed">Completed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-        {/* Ticket List */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Maintenance Tickets ({filteredTickets.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {filteredTickets.map((ticket) => (
-                <Card key={ticket.id} className="border-l-4 border-l-primary">
-                  <CardContent className="pt-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <Badge variant="outline" className="font-mono">
-                          {ticket.id}
-                        </Badge>
-                        <Badge className={getStatusColor(ticket.status)}>
-                          {getStatusIcon(ticket.status)}
-                          {ticket.status}
-                        </Badge>
-                        <Badge className={getSeverityColor(ticket.severity)}>
-                          {ticket.severity}
-                        </Badge>
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {ticket.estimatedHours}h estimated
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <h3 className="font-medium mb-1">{ticket.equipmentId}</h3>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          {ticket.equipmentType}
-                        </p>
-                        <p className="text-sm">{ticket.description}</p>
-                      </div>
-                      
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Reported by:</span>
-                          <span>{ticket.reportedBy}</span>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Severity</label>
+                    <Select value={severityFilter} onValueChange={setSeverityFilter}>
+                      <SelectTrigger className="input-mining">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Severities</SelectItem>
+                        <SelectItem value="Critical">Critical</SelectItem>
+                        <SelectItem value="High">High</SelectItem>
+                        <SelectItem value="Medium">Medium</SelectItem>
+                        <SelectItem value="Low">Low</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Ticket List */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Maintenance Tickets ({filteredTickets.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {filteredTickets.map((ticket) => (
+                    <Card key={ticket.id} className="border-l-4 border-l-primary">
+                      <CardContent className="pt-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <Badge variant="outline" className="font-mono">
+                              {ticket.id}
+                            </Badge>
+                            <Badge className={getStatusColor(ticket.status)}>
+                              {getStatusIcon(ticket.status)}
+                              {ticket.status}
+                            </Badge>
+                            <Badge className={getSeverityColor(ticket.severity)}>
+                              {ticket.severity}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">
+                              {ticket.estimatedHours}h estimated
+                            </span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleViewTicket(ticket.equipmentId)}
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Details
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Assigned to:</span>
-                          <span>{ticket.assignedTo}</span>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <h3 className="font-medium mb-1">{ticket.equipmentId}</h3>
+                            <p className="text-sm text-muted-foreground mb-2">
+                              {ticket.equipmentType}
+                            </p>
+                            <p className="text-sm">{ticket.description}</p>
+                          </div>
+                          
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Reported by:</span>
+                              <span>{ticket.reportedBy}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Assigned to:</span>
+                              <span>{ticket.assignedTo}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Created:</span>
+                              <span>{new Date(ticket.createdAt).toLocaleDateString()}</span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Created:</span>
-                          <span>{new Date(ticket.createdAt).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="history">
+            <MaintenanceHistory userRole="maintainer" />
+          </TabsContent>
+        </Tabs>
       </div>
+
+      {/* Notification Drawer */}
+      <NotificationDrawer
+        isOpen={notificationDrawerOpen}
+        onClose={() => setNotificationDrawerOpen(false)}
+        onViewTicket={handleViewTicket}
+      />
     </div>
   );
 };

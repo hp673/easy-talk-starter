@@ -15,7 +15,8 @@ import {
   AlertTriangle,
   Clock,
   Upload,
-  AlertCircle
+  AlertCircle,
+  History
 } from 'lucide-react';
 
 const OperatorDashboard = () => {
@@ -126,6 +127,27 @@ const OperatorDashboard = () => {
                 <p className="text-2xl font-bold text-mining-dark">1</p>
                 <p className="text-sm text-muted-foreground">Critical Defects</p>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center space-y-4">
+              <History className="h-12 w-12 mx-auto text-primary" />
+              <div>
+                <h3 className="font-semibold">Maintenance History</h3>
+                <p className="text-sm text-muted-foreground">
+                  View past inspections and repairs
+                </p>
+              </div>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => navigate('/maintenance-history')}
+              >
+                View History
+              </Button>
             </div>
           </CardContent>
         </Card>
