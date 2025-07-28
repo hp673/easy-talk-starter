@@ -190,17 +190,8 @@ const AdminPortal = () => {
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
-                <p className="text-2xl font-bold text-primary">{systemMetrics.todayLogins}</p>
-                <p className="text-sm text-muted-foreground">Today's Logins</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-success">{systemMetrics.systemUptime}</p>
-                <p className="text-sm text-muted-foreground">Uptime</p>
+                <p className="text-2xl font-bold text-warning">{systemMetrics.totalEquipment - systemMetrics.activeEquipment}</p>
+                <p className="text-sm text-muted-foreground">Inactive Equipment</p>
               </div>
             </CardContent>
           </Card>

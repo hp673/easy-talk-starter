@@ -307,10 +307,10 @@ const MaintenanceDashboard = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Team Load</p>
-                  <p className="text-2xl font-bold text-success">85%</p>
+                  <p className="text-sm font-medium text-muted-foreground">Closed Tickets</p>
+                  <p className="text-2xl font-bold text-success">{tickets.filter(t => t.status === 'Completed').length}</p>
                 </div>
-                <Users className="h-8 w-8 text-success" />
+                <CheckCircle className="h-8 w-8 text-success" />
               </div>
             </CardContent>
           </Card>
