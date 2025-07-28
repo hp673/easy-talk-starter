@@ -9,40 +9,93 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from '@/hooks/use-toast';
-import { ArrowLeft, ArrowRight, Save, AlertTriangle, Wifi, WifiOff, Camera } from 'lucide-react';
+import { ArrowLeft, Save, AlertTriangle, Wifi, WifiOff, Camera, FileText } from 'lucide-react';
 import { useOffline } from '@/contexts/OfflineContext';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface InspectionFormData {
-  equipment_id: string;
-  make_model: string;
+  // Basic Information
+  equipment: string;
+  make_and_model: string;
   date: string;
-  mine_location: string;
-  engine_hours: number;
-  fuel_level: number;
-  oil_level: 'Normal' | 'Low' | 'Critical';
-  electrical_ok: boolean;
+  
+  // Operational Data
+  name_of_mine: string;
+  engine_hours_beginning: number;
+  engine_hours_ending: number;
+  fuel_added_gallons: number;
+  
+  // Pre-Shift Engine
+  oil_level: boolean;
+  water_level: boolean;
+  wiring: boolean;
+  generator: boolean;
+  starter: boolean;
+  battery: boolean;
+  fuel_level: boolean;
+  exhaust_sys: boolean;
+  oil_leaks: boolean;
   hyd_leaks: boolean;
-  brakes_ok: boolean;
-  instrumentation_ok: boolean;
-  safety_ok: boolean;
-  structure_ok: boolean;
-  lighting_ok: boolean;
-  guards_ok: boolean;
-  defect_explanation: string;
+  fuel_leaks: boolean;
+  low_power: boolean;
+  engine_other: boolean;
+  engine_no_defects_found: boolean;
+  
+  // Pre-Shift In-Cab
+  brakes_park: boolean;
+  brakes_foot: boolean;
+  horn: boolean;
+  gauges: boolean;
+  windshield_wipers: boolean;
+  glass_windshield: boolean;
+  glass_door: boolean;
+  mirrors: boolean;
+  seat_belts: boolean;
+  steering: boolean;
+  ignition: boolean;
+  in_cab_other_1: boolean;
+  in_cab_other_2: boolean;
+  in_cab_other: boolean;
+  in_cab_no_defects_found: boolean;
+  
+  // Pre-Shift Exterior
+  suspension: boolean;
+  vehicle_frame: boolean;
+  back_up_alarm: boolean;
+  head_lights: boolean;
+  tail_lights: boolean;
+  safety_guards: boolean;
+  tires_wheels: boolean;
+  transmission: boolean;
+  back_up_lights: boolean;
+  differential: boolean;
+  front_axle: boolean;
+  cutting_edge: boolean;
+  track: boolean;
+  bucket_teeth: boolean;
+  exterior_no_defects_found: boolean;
+  
+  // Other sections
+  explanation_of_defects: string;
+  operator_signature_initial: string;
+  date_initial: string;
+  defects_corrected: string;
+  operator_signature_corrected: string;
+  date_corrected: string;
 }
 
 const formSections = [
-  { id: 'basic', title: 'Basic Information', icon: '📋' },
-  { id: 'operational', title: 'Operational Data', icon: '⚙️' },
-  { id: 'engine', title: 'Pre-Shift Engine', icon: '🔧' },
-  { id: 'cabin', title: 'Pre-Shift In-Cab', icon: '🚗' },
-  { id: 'exterior', title: 'Pre-Shift Exterior', icon: '🔍' },
-  { id: 'defects', title: 'Defect Documentation', icon: '⚠️' },
+  { id: 'basic_info', title: 'Basic Information', icon: '📋' },
+  { id: 'operational_data', title: 'Operational Data', icon: '⚙️' },
+  { id: 'pre_shift_engine', title: 'Pre-Shift – Engine', icon: '🔧' },
+  { id: 'pre_shift_in_cab', title: 'Pre-Shift – In-Cab', icon: '🚗' },
+  { id: 'pre_shift_exterior', title: 'Pre-Shift – Exterior', icon: '🔍' },
+  { id: 'explanation_of_defects', title: 'Explanation of Defects', icon: '⚠️' },
+  { id: 'initial_signature', title: 'Operator Signature (Initial)', icon: '✍️' },
+  { id: 'corrective_action', title: 'Defects Corrected', icon: '✅' },
 ];
 
 const InspectionForm = () => {
-  const [currentSection, setCurrentSection] = useState(0);
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [criticalDefectDetected, setCriticalDefectDetected] = useState(false);
@@ -51,7 +104,7 @@ const InspectionForm = () => {
   const { isOnline, saveOfflineData } = useOffline();
   const { user } = useAuth();
   
-  const { register, watch, setValue, getValues, formState: { errors } } = useForm<InspectionFormData>();
+  const { register, watch, setValue, getValues, handleSubmit, formState: { errors } } = useForm<InspectionFormData>();
   
   // Get selected equipment from localStorage
   const selectedEquipment = JSON.parse(localStorage.getItem('selected_equipment') || '{}');
@@ -61,10 +114,11 @@ const InspectionForm = () => {
   useEffect(() => {
     // Initialize form with equipment data
     if (selectedEquipment.id) {
-      setValue('equipment_id', selectedEquipment.id);
-      setValue('make_model', `${selectedEquipment.make} ${selectedEquipment.model}`);
-      setValue('mine_location', selectedEquipment.location);
+      setValue('equipment', selectedEquipment.id);
+      setValue('make_and_model', `${selectedEquipment.make} ${selectedEquipment.model}`);
+      setValue('name_of_mine', selectedEquipment.location);
       setValue('date', new Date().toISOString().split('T')[0]);
+      setValue('date_initial', new Date().toISOString().split('T')[0]);
     }
   }, [selectedEquipment, setValue]);
 
@@ -91,9 +145,9 @@ const InspectionForm = () => {
   // Check for critical defects
   useEffect(() => {
     const isHydLeaks = watchedValues.hyd_leaks;
-    const isOilCritical = watchedValues.oil_level === 'Critical';
+    const isOilLeaks = watchedValues.oil_leaks;
     
-    if (isHydLeaks || isOilCritical) {
+    if (isHydLeaks || isOilLeaks) {
       setCriticalDefectDetected(true);
       toast({
         title: "Critical Defect Detected",
@@ -103,19 +157,7 @@ const InspectionForm = () => {
     } else {
       setCriticalDefectDetected(false);
     }
-  }, [watchedValues.hyd_leaks, watchedValues.oil_level]);
-
-  const nextSection = () => {
-    if (currentSection < formSections.length - 1) {
-      setCurrentSection(currentSection + 1);
-    }
-  };
-
-  const prevSection = () => {
-    if (currentSection > 0) {
-      setCurrentSection(currentSection - 1);
-    }
-  };
+  }, [watchedValues.hyd_leaks, watchedValues.oil_leaks]);
 
   const handlePhotoUpload = () => {
     navigate('/defect-documentation');
@@ -125,34 +167,47 @@ const InspectionForm = () => {
     navigate('/signature-capture');
   };
 
-  const progress = ((currentSection + 1) / formSections.length) * 100;
+  const onSubmit = (data: InspectionFormData) => {
+    saveOfflineData('forms', data);
+    toast({
+      title: "Inspection Completed",
+      description: "Form submitted successfully",
+    });
+    navigate('/operator-dashboard');
+  };
 
   const renderBasicInformation = () => (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="equipment_id">Equipment ID</Label>
-          <Input
-            {...register('equipment_id')}
-            id="equipment_id"
-            className="input-mining"
-            readOnly
-          />
+    <Card className="form-section">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <span className="text-2xl">📋</span>
+          Basic Information
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="equipment">Equipment</Label>
+            <Input
+              {...register('equipment')}
+              id="equipment"
+              className="input-mining"
+              readOnly
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="make_and_model">Make and Model</Label>
+            <Input
+              {...register('make_and_model')}
+              id="make_and_model"
+              className="input-mining"
+              readOnly
+            />
+          </div>
         </div>
+        
         <div className="space-y-2">
-          <Label htmlFor="make_model">Make & Model</Label>
-          <Input
-            {...register('make_model')}
-            id="make_model"
-            className="input-mining"
-            readOnly
-          />
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="date">Inspection Date</Label>
+          <Label htmlFor="date">Date</Label>
           <Input
             {...register('date')}
             id="date"
@@ -160,228 +215,360 @@ const InspectionForm = () => {
             className="input-mining"
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="mine_location">Mine Location</Label>
-          <Input
-            {...register('mine_location')}
-            id="mine_location"
-            className="input-mining"
-          />
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 
   const renderOperationalData = () => (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+    <Card className="form-section">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <span className="text-2xl">⚙️</span>
+          Operational Data
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="engine_hours">Engine Hours</Label>
+          <Label htmlFor="name_of_mine">Name of Mine</Label>
           <Input
-            {...register('engine_hours', { valueAsNumber: true })}
-            id="engine_hours"
+            {...register('name_of_mine')}
+            id="name_of_mine"
+            className="input-mining"
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="engine_hours_beginning">Engine Hours Beginning</Label>
+            <Input
+              {...register('engine_hours_beginning', { valueAsNumber: true })}
+              id="engine_hours_beginning"
+              type="number"
+              className="input-mining"
+              placeholder="0"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="engine_hours_ending">Engine Hours Ending</Label>
+            <Input
+              {...register('engine_hours_ending', { valueAsNumber: true })}
+              id="engine_hours_ending"
+              type="number"
+              className="input-mining"
+              placeholder="0"
+            />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="fuel_added_gallons">Fuel Added (Gallons)</Label>
+          <Input
+            {...register('fuel_added_gallons', { valueAsNumber: true })}
+            id="fuel_added_gallons"
             type="number"
             className="input-mining"
             placeholder="0"
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="fuel_level">Fuel Level (%)</Label>
-          <Input
-            {...register('fuel_level', { valueAsNumber: true })}
-            id="fuel_level"
-            type="number"
-            min="0"
-            max="100"
-            className="input-mining"
-            placeholder="0"
-          />
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 
   const renderEngineSection = () => (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <Label htmlFor="oil_level">Oil Level</Label>
-        <Select onValueChange={(value) => setValue('oil_level', value as any)}>
-          <SelectTrigger className="input-mining">
-            <SelectValue placeholder="Select oil level" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Normal">Normal</SelectItem>
-            <SelectItem value="Low">Low</SelectItem>
-            <SelectItem value="Critical">Critical</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-4">
-        <div className="flex items-center space-x-2">
+    <Card className="form-section">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <span className="text-2xl">🔧</span>
+          Pre-Shift – Engine
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          {[
+            { id: 'oil_level', label: 'Oil Level' },
+            { id: 'water_level', label: 'Water Level' },
+            { id: 'wiring', label: 'Wiring' },
+            { id: 'generator', label: 'Generator' },
+            { id: 'starter', label: 'Starter' },
+            { id: 'battery', label: 'Battery' },
+            { id: 'fuel_level', label: 'Fuel Level' },
+            { id: 'exhaust_sys', label: 'Exhaust System' },
+            { id: 'oil_leaks', label: 'Oil Leaks' },
+            { id: 'hyd_leaks', label: 'Hydraulic Leaks' },
+            { id: 'fuel_leaks', label: 'Fuel Leaks' },
+            { id: 'low_power', label: 'Low Power' },
+            { id: 'engine_other', label: 'Engine Other' },
+          ].map((field) => (
+            <div key={field.id} className="flex items-center space-x-2">
+              <Checkbox
+                id={field.id}
+                {...register(field.id as keyof InspectionFormData)}
+              />
+              <Label htmlFor={field.id} className="text-base">
+                {field.label}
+              </Label>
+            </div>
+          ))}
+        </div>
+        
+        <div className="flex items-center space-x-2 mt-6 p-4 bg-muted rounded-lg">
           <Checkbox
-            id="electrical_ok"
-            onCheckedChange={(checked) => setValue('electrical_ok', !!checked)}
+            id="engine_no_defects_found"
+            {...register('engine_no_defects_found')}
           />
-          <Label htmlFor="electrical_ok" className="text-base">
-            Electrical Systems OK
+          <Label htmlFor="engine_no_defects_found" className="text-base font-semibold">
+            No Defects Found
           </Label>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="hyd_leaks"
-            onCheckedChange={(checked) => setValue('hyd_leaks', !!checked)}
-          />
-          <Label htmlFor="hyd_leaks" className="text-base">
-            Hydraulic Leaks Detected
-          </Label>
-        </div>
-      </div>
-
-      {criticalDefectDetected && (
-        <div className="bg-destructive/10 border border-destructive text-destructive p-4 rounded-lg">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5" />
-            <strong>EQUIPMENT LOCKOUT</strong>
+        {criticalDefectDetected && (
+          <div className="bg-destructive/10 border border-destructive text-destructive p-4 rounded-lg">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              <strong>EQUIPMENT LOCKOUT</strong>
+            </div>
+            <p className="mt-2">Critical defect detected. Equipment must not be operated until repaired.</p>
           </div>
-          <p className="mt-2">Critical defect detected. Equipment must not be operated until repaired.</p>
-        </div>
-      )}
-    </div>
+        )}
+      </CardContent>
+    </Card>
   );
 
   const renderCabinSection = () => (
-    <div className="space-y-4">
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="brakes_ok"
-          onCheckedChange={(checked) => setValue('brakes_ok', !!checked)}
-        />
-        <Label htmlFor="brakes_ok" className="text-base">
-          Brakes Functioning Properly
-        </Label>
-      </div>
-
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="instrumentation_ok"
-          onCheckedChange={(checked) => setValue('instrumentation_ok', !!checked)}
-        />
-        <Label htmlFor="instrumentation_ok" className="text-base">
-          All Instrumentation Working
-        </Label>
-      </div>
-
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="safety_ok"
-          onCheckedChange={(checked) => setValue('safety_ok', !!checked)}
-        />
-        <Label htmlFor="safety_ok" className="text-base">
-          Safety Systems Operational
-        </Label>
-      </div>
-    </div>
+    <Card className="form-section">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <span className="text-2xl">🚗</span>
+          Pre-Shift – In-Cab
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          {[
+            { id: 'brakes_park', label: 'Parking Brakes' },
+            { id: 'brakes_foot', label: 'Foot Brakes' },
+            { id: 'horn', label: 'Horn' },
+            { id: 'gauges', label: 'Gauges' },
+            { id: 'windshield_wipers', label: 'Windshield Wipers' },
+            { id: 'glass_windshield', label: 'Glass Windshield' },
+            { id: 'glass_door', label: 'Glass Door' },
+            { id: 'mirrors', label: 'Mirrors' },
+            { id: 'seat_belts', label: 'Seat Belts' },
+            { id: 'steering', label: 'Steering' },
+            { id: 'ignition', label: 'Ignition' },
+            { id: 'in_cab_other_1', label: 'In-Cab Other 1' },
+            { id: 'in_cab_other_2', label: 'In-Cab Other 2' },
+            { id: 'in_cab_other', label: 'In-Cab Other' },
+          ].map((field) => (
+            <div key={field.id} className="flex items-center space-x-2">
+              <Checkbox
+                id={field.id}
+                {...register(field.id as keyof InspectionFormData)}
+              />
+              <Label htmlFor={field.id} className="text-base">
+                {field.label}
+              </Label>
+            </div>
+          ))}
+        </div>
+        
+        <div className="flex items-center space-x-2 mt-6 p-4 bg-muted rounded-lg">
+          <Checkbox
+            id="in_cab_no_defects_found"
+            {...register('in_cab_no_defects_found')}
+          />
+          <Label htmlFor="in_cab_no_defects_found" className="text-base font-semibold">
+            No Defects Found
+          </Label>
+        </div>
+      </CardContent>
+    </Card>
   );
 
   const renderExteriorSection = () => (
-    <div className="space-y-4">
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="structure_ok"
-          onCheckedChange={(checked) => setValue('structure_ok', !!checked)}
-        />
-        <Label htmlFor="structure_ok" className="text-base">
-          Structural Integrity Good
-        </Label>
-      </div>
-
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="lighting_ok"
-          onCheckedChange={(checked) => setValue('lighting_ok', !!checked)}
-        />
-        <Label htmlFor="lighting_ok" className="text-base">
-          All Lighting Functional
-        </Label>
-      </div>
-
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="guards_ok"
-          onCheckedChange={(checked) => setValue('guards_ok', !!checked)}
-        />
-        <Label htmlFor="guards_ok" className="text-base">
-          Safety Guards in Place
-        </Label>
-      </div>
-    </div>
+    <Card className="form-section">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <span className="text-2xl">🔍</span>
+          Pre-Shift – Exterior
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          {[
+            { id: 'suspension', label: 'Suspension' },
+            { id: 'vehicle_frame', label: 'Vehicle Frame' },
+            { id: 'back_up_alarm', label: 'Back-up Alarm' },
+            { id: 'head_lights', label: 'Head Lights' },
+            { id: 'tail_lights', label: 'Tail Lights' },
+            { id: 'safety_guards', label: 'Safety Guards' },
+            { id: 'tires_wheels', label: 'Tires/Wheels' },
+            { id: 'transmission', label: 'Transmission' },
+            { id: 'back_up_lights', label: 'Back-up Lights' },
+            { id: 'differential', label: 'Differential' },
+            { id: 'front_axle', label: 'Front Axle' },
+            { id: 'cutting_edge', label: 'Cutting Edge' },
+            { id: 'track', label: 'Track' },
+            { id: 'bucket_teeth', label: 'Bucket Teeth' },
+          ].map((field) => (
+            <div key={field.id} className="flex items-center space-x-2">
+              <Checkbox
+                id={field.id}
+                {...register(field.id as keyof InspectionFormData)}
+              />
+              <Label htmlFor={field.id} className="text-base">
+                {field.label}
+              </Label>
+            </div>
+          ))}
+        </div>
+        
+        <div className="flex items-center space-x-2 mt-6 p-4 bg-muted rounded-lg">
+          <Checkbox
+            id="exterior_no_defects_found"
+            {...register('exterior_no_defects_found')}
+          />
+          <Label htmlFor="exterior_no_defects_found" className="text-base font-semibold">
+            No Defects Found
+          </Label>
+        </div>
+      </CardContent>
+    </Card>
   );
 
   const renderDefectsSection = () => (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <Label htmlFor="defect_explanation">Defect Explanation</Label>
-        <Textarea
-          {...register('defect_explanation')}
-          id="defect_explanation"
-          placeholder="Describe any defects or issues found during inspection..."
-          className="input-mining min-h-24"
-        />
-      </div>
+    <Card className="form-section">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <span className="text-2xl">⚠️</span>
+          Explanation of Defects
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="explanation_of_defects">Explanation of Defects</Label>
+          <Textarea
+            {...register('explanation_of_defects')}
+            id="explanation_of_defects"
+            placeholder="Describe any defects or issues found during inspection..."
+            className="input-mining min-h-24"
+          />
+        </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <Button
-          type="button"
-          onClick={handlePhotoUpload}
-          className="btn-mining flex items-center gap-2"
-        >
-          <Camera className="h-4 w-4" />
-          Add Photos
-        </Button>
+        <div className="grid grid-cols-2 gap-4">
+          <Button
+            type="button"
+            onClick={handlePhotoUpload}
+            className="btn-mining flex items-center gap-2"
+          >
+            <Camera className="h-4 w-4" />
+            Add Photos
+          </Button>
 
-        <Button
-          type="button"
-          onClick={handleSignature}
-          className="btn-mining"
-        >
-          Capture Signature
-        </Button>
-      </div>
-    </div>
+          <Button
+            type="button"
+            onClick={handleSignature}
+            className="btn-mining"
+          >
+            Capture Signature
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 
-  const renderCurrentSection = () => {
-    switch (currentSection) {
-      case 0: return renderBasicInformation();
-      case 1: return renderOperationalData();
-      case 2: return renderEngineSection();
-      case 3: return renderCabinSection();
-      case 4: return renderExteriorSection();
-      case 5: return renderDefectsSection();
-      default: return null;
-    }
-  };
+  const renderInitialSignature = () => (
+    <Card className="form-section">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <span className="text-2xl">✍️</span>
+          Operator Signature (Initial)
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="operator_signature_initial">Operator Signature</Label>
+          <Input
+            {...register('operator_signature_initial')}
+            id="operator_signature_initial"
+            placeholder="Click to capture signature"
+            className="input-mining"
+            onClick={handleSignature}
+            readOnly
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="date_initial">Date</Label>
+          <Input
+            {...register('date_initial')}
+            id="date_initial"
+            type="date"
+            className="input-mining"
+          />
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const renderCorrectiveAction = () => (
+    <Card className="form-section">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <span className="text-2xl">✅</span>
+          Defects Corrected
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="defects_corrected">Defects Corrected</Label>
+          <Textarea
+            {...register('defects_corrected')}
+            id="defects_corrected"
+            placeholder="Describe corrective actions taken..."
+            className="input-mining min-h-24"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="operator_signature_corrected">Operator Signature</Label>
+          <Input
+            {...register('operator_signature_corrected')}
+            id="operator_signature_corrected"
+            placeholder="Click to capture signature"
+            className="input-mining"
+            onClick={handleSignature}
+            readOnly
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="date_corrected">Date</Label>
+          <Input
+            {...register('date_corrected')}
+            id="date_corrected"
+            type="date"
+            className="input-mining"
+          />
+        </div>
+      </CardContent>
+    </Card>
+  );
+
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-card border-b border-border p-4">
+      <div className="bg-card border-b border-border p-4 sticky top-0 z-10">
         <div className="flex items-center justify-between max-w-4xl mx-auto">
           <div className="flex items-center gap-4">
             <Button
               variant="outline"
               size="icon"
-              onClick={() => navigate('/equipment-selection')}
+              onClick={() => navigate('/operator-dashboard')}
               className="touch-target"
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <h1 className="text-xl font-semibold">Equipment Inspection</h1>
+              <h1 className="text-xl font-semibold">Heavy Equipment Daily Inspection</h1>
               <p className="text-sm text-muted-foreground">
-                {selectedEquipment.id} - {formSections[currentSection].title}
+                {selectedEquipment.id} - Complete Form
               </p>
             </div>
           </div>
@@ -408,88 +595,47 @@ const InspectionForm = () => {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto p-6">
-        {/* Progress Bar */}
-        <div className="mb-6">
-          <div className="progress-bar">
-            <div 
-              className="progress-fill"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <div className="flex justify-between mt-2 text-sm text-muted-foreground">
-            <span>Section {currentSection + 1} of {formSections.length}</span>
-            <span>{Math.round(progress)}% Complete</span>
-          </div>
-        </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="max-w-4xl mx-auto p-6 space-y-6">
+        {/* All Form Sections */}
+        {renderBasicInformation()}
+        {renderOperationalData()}
+        {renderEngineSection()}
+        {renderCabinSection()}
+        {renderExteriorSection()}
+        {renderDefectsSection()}
+        {renderInitialSignature()}
+        {renderCorrectiveAction()}
 
-        {/* Section Navigation */}
-        <div className="grid grid-cols-6 gap-2 mb-6">
-          {formSections.map((section, index) => (
+        {/* Submit Button - Sticky */}
+        <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t border-border p-4 -mx-6">
+          <div className="flex justify-between gap-4 max-w-4xl mx-auto">
             <Button
-              key={section.id}
-              variant={index === currentSection ? "default" : "outline"}
-              size="sm"
-              onClick={() => setCurrentSection(index)}
-              className="text-xs p-2 h-auto flex flex-col gap-1"
+              type="button"
+              onClick={() => {
+                const formData = getValues();
+                saveOfflineData('forms', formData);
+                toast({
+                  title: "Form Saved",
+                  description: "Your inspection data has been saved",
+                });
+              }}
+              variant="outline"
+              className="touch-target"
             >
-              <span className="text-lg">{section.icon}</span>
-              <span className="hidden sm:block">{section.title}</span>
+              <Save className="h-4 w-4 mr-2" />
+              Save Progress
             </Button>
-          ))}
+
+            <Button
+              type="submit"
+              className="btn-mining flex-1 max-w-xs"
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Submit Inspection
+            </Button>
+          </div>
         </div>
-
-        {/* Form Section */}
-        <Card className="form-section">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <span className="text-2xl">{formSections[currentSection].icon}</span>
-              {formSections[currentSection].title}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {renderCurrentSection()}
-          </CardContent>
-        </Card>
-
-        {/* Navigation Buttons */}
-        <div className="flex justify-between mt-6">
-          <Button
-            onClick={prevSection}
-            disabled={currentSection === 0}
-            variant="outline"
-            className="touch-target"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Previous
-          </Button>
-
-          <Button
-            onClick={() => {
-              const formData = getValues();
-              saveOfflineData('forms', formData);
-              toast({
-                title: "Form Saved",
-                description: "Your inspection data has been saved",
-              });
-            }}
-            variant="outline"
-            className="touch-target"
-          >
-            <Save className="h-4 w-4 mr-2" />
-            Save Progress
-          </Button>
-
-          <Button
-            onClick={nextSection}
-            disabled={currentSection === formSections.length - 1}
-            className="btn-mining"
-          >
-            Next
-            <ArrowRight className="h-4 w-4 ml-2" />
-          </Button>
-        </div>
-      </div>
+      </form>
     </div>
   );
 };
