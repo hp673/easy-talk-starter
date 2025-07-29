@@ -201,10 +201,18 @@ const OperatorDashboard = () => {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => navigate(`/inspection-form?equipment=${equipment.id}`)}
+                    onClick={() => navigate(`/inspection-history?equipment=${equipment.id}`)}
                     className="btn-secondary"
                   >
-                    Inspect
+                    View Details
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate(`/inspection-form?equipment=${equipment.id}&reopen=true`)}
+                    className="btn-secondary"
+                  >
+                    Reopen
                   </Button>
                 </div>
               </div>

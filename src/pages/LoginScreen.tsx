@@ -116,12 +116,7 @@ const LoginScreen = () => {
           </div>
           
           <div className="flex justify-center">
-            {isOnline ? (
-              <div className="status-online">
-                <Wifi className="h-4 w-4" />
-                Online
-              </div>
-            ) : (
+            {!isOnline && (
               <div className="status-offline">
                 <WifiOff className="h-4 w-4" />
                 Offline

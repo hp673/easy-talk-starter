@@ -144,7 +144,10 @@ export const DefectDetailView: React.FC<DefectDetailProps> = ({
                 </p>
               </div>
 
-              <Button onClick={onStartRepair} className="w-full">
+              <Button onClick={() => {
+                // Navigate to signature capture first, then repair
+                window.location.href = '/signature-capture?type=repair';
+              }} className="w-full">
                 <Wrench className="h-4 w-4 mr-2" />
                 Start Repair
               </Button>

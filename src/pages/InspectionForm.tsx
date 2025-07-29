@@ -91,8 +91,7 @@ const formSections = [
   { id: 'pre_shift_in_cab', title: 'Pre-Shift – In-Cab', icon: '🚗' },
   { id: 'pre_shift_exterior', title: 'Pre-Shift – Exterior', icon: '🔍' },
   { id: 'explanation_of_defects', title: 'Explanation of Defects', icon: '⚠️' },
-  { id: 'initial_signature', title: 'Operator Signature (Initial)', icon: '✍️' },
-  { id: 'corrective_action', title: 'Defects Corrected', icon: '✅' },
+  { id: 'operator_signature', title: 'Operator Signature', icon: '✍️' },
 ];
 
 const InspectionForm = () => {
@@ -291,19 +290,20 @@ const InspectionForm = () => {
             { id: 'battery', label: 'Battery' },
             { id: 'fuel_level', label: 'Fuel Level' },
             { id: 'exhaust_sys', label: 'Exhaust System' },
-            { id: 'oil_leaks', label: 'Oil Leaks' },
-            { id: 'hyd_leaks', label: 'Hydraulic Leaks' },
+            { id: 'oil_leaks', label: 'Oil Leaks', critical: true },
+            { id: 'hyd_leaks', label: 'Hydraulic Leaks', critical: true },
             { id: 'fuel_leaks', label: 'Fuel Leaks' },
             { id: 'low_power', label: 'Low Power' },
             { id: 'engine_other', label: 'Engine Other' },
-          ].map((field) => (
+          ].map((field: any) => (
             <div key={field.id} className="flex items-center space-x-2">
               <Checkbox
                 id={field.id}
                 {...register(field.id as keyof InspectionFormData)}
               />
-              <Label htmlFor={field.id} className="text-base">
+              <Label htmlFor={field.id} className={`text-base ${field.critical ? 'font-bold text-destructive' : ''}`}>
                 {field.label}
+                {field.critical && ' ⚠️'}
               </Label>
             </div>
           ))}
@@ -453,34 +453,24 @@ const InspectionForm = () => {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <Button
-            type="button"
-            onClick={handlePhotoUpload}
-            className="btn-mining flex items-center gap-2"
-          >
-            <Camera className="h-4 w-4" />
-            Add Photos
-          </Button>
-
-          <Button
-            type="button"
-            onClick={handleSignature}
-            className="btn-mining"
-          >
-            Capture Signature
-          </Button>
-        </div>
+        <Button
+          type="button"
+          onClick={handlePhotoUpload}
+          className="btn-mining flex items-center gap-2"
+        >
+          <Camera className="h-4 w-4" />
+          Add Photos
+        </Button>
       </CardContent>
     </Card>
   );
 
-  const renderInitialSignature = () => (
+  const renderOperatorSignature = () => (
     <Card className="form-section">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <span className="text-2xl">✍️</span>
-          Operator Signature (Initial)
+          Operator Signature
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -508,47 +498,6 @@ const InspectionForm = () => {
     </Card>
   );
 
-  const renderCorrectiveAction = () => (
-    <Card className="form-section">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <span className="text-2xl">✅</span>
-          Defects Corrected
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="defects_corrected">Defects Corrected</Label>
-          <Textarea
-            {...register('defects_corrected')}
-            id="defects_corrected"
-            placeholder="Describe corrective actions taken..."
-            className="input-mining min-h-24"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="operator_signature_corrected">Operator Signature</Label>
-          <Input
-            {...register('operator_signature_corrected')}
-            id="operator_signature_corrected"
-            placeholder="Click to capture signature"
-            className="input-mining"
-            onClick={handleSignature}
-            readOnly
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="date_corrected">Date</Label>
-          <Input
-            {...register('date_corrected')}
-            id="date_corrected"
-            type="date"
-            className="input-mining"
-          />
-        </div>
-      </CardContent>
-    </Card>
-  );
 
 
   return (
@@ -603,8 +552,7 @@ const InspectionForm = () => {
         {renderCabinSection()}
         {renderExteriorSection()}
         {renderDefectsSection()}
-        {renderInitialSignature()}
-        {renderCorrectiveAction()}
+        {renderOperatorSignature()}
 
         {/* Submit Button - Sticky */}
         <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t border-border p-4 -mx-6">

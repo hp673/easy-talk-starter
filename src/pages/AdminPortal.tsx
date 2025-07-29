@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOffline } from '@/contexts/OfflineContext';
+import { AddUserForm, AddEquipmentForm, CreateTemplateForm, ResetPasswordForm } from '@/components/AdminForms';
 import { 
   Settings, Users, Truck, FileText, Activity, 
   Wifi, WifiOff, LogOut, Search, Plus, Edit, Trash2
@@ -140,7 +141,10 @@ const AdminPortal = () => {
               </div>
             )}
             
-            <Button variant="outline" onClick={logout}>
+            <Button variant="outline" onClick={() => {
+              logout();
+              navigate('/');
+            }}>
               <LogOut className="h-4 w-4 mr-2" />
               Sign Out
             </Button>
@@ -237,10 +241,10 @@ const AdminPortal = () => {
               <TabsContent value="users" className="space-y-4">
                 <div className="flex justify-between items-center">
                   <h3 className="text-lg font-semibold">User Management</h3>
-                  <Button className="btn-mining">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add User
-                  </Button>
+                  <div className="flex gap-2">
+                    <AddUserForm onSubmit={(userData) => console.log('User created:', userData)} />
+                    <ResetPasswordForm />
+                  </div>
                 </div>
 
                 <div className="space-y-3">
@@ -284,10 +288,7 @@ const AdminPortal = () => {
               <TabsContent value="equipment" className="space-y-4">
                 <div className="flex justify-between items-center">
                   <h3 className="text-lg font-semibold">Equipment Management</h3>
-                  <Button className="btn-mining">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Equipment
-                  </Button>
+                  <AddEquipmentForm onSubmit={(equipmentData) => console.log('Equipment created:', equipmentData)} />
                 </div>
 
                 <div className="space-y-3">
@@ -332,10 +333,7 @@ const AdminPortal = () => {
               <TabsContent value="forms" className="space-y-4">
                 <div className="flex justify-between items-center">
                   <h3 className="text-lg font-semibold">Form Template Editor</h3>
-                  <Button className="btn-mining">
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Template
-                  </Button>
+                  <CreateTemplateForm />
                 </div>
 
                 <Card>
@@ -344,11 +342,11 @@ const AdminPortal = () => {
                       <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                       <h4 className="text-lg font-medium mb-2">JSON Form Template Editor</h4>
                       <p className="text-muted-foreground mb-4">
-                        Configure inspection form fields, validation rules, and workflows
+                        Configure inspection form fields, validation rules, and workflows using JSON structure
                       </p>
-                      <Button className="btn-mining">
-                        Open Form Editor
-                      </Button>
+                      <p className="text-sm text-muted-foreground">
+                        Create templates with sections and fields that operators can use for inspections
+                      </p>
                     </div>
                   </CardContent>
                 </Card>

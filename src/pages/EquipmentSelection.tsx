@@ -155,91 +155,37 @@ const EquipmentSelection = () => {
           </CardContent>
         </Card>
 
-        {/* Manual Selection */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Search className="h-5 w-5" />
-              Manual Equipment Selection
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="search">Search Equipment</Label>
-              <Input
-                id="search"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by ID, make, or model..."
-                className="input-mining"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="equipment-select">Select Equipment</Label>
-              <Select value={selectedEquipment} onValueChange={setSelectedEquipment}>
-                <SelectTrigger className="input-mining">
-                  <SelectValue placeholder="Choose equipment for inspection" />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredEquipment.map((equipment) => (
-                    <SelectItem key={equipment.id} value={equipment.id}>
-                      <div className="flex items-center gap-3">
-                        <Truck className="h-4 w-4" />
-                        <div>
-                          <div className="font-medium">{equipment.id}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {equipment.make} {equipment.model} - {equipment.location}
-                          </div>
-                        </div>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Selected Equipment Details */}
-        {selectedEquipmentData && (
-          <Card className="border-primary">
+        {/* Scan Result Display - Only shown after successful scan */}
+        {selectedEquipment && (
+          <Card className="border-success bg-success/5">
             <CardHeader>
-              <CardTitle className="text-primary">Selected Equipment</CardTitle>
+              <CardTitle className="flex items-center gap-2 text-success">
+                <QrCode className="h-5 w-5" />
+                Equipment Scanned Successfully
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium">Equipment ID</Label>
-                  <p className="text-lg font-mono">{selectedEquipmentData.id}</p>
+              <div className="text-center space-y-4">
+                <div className="p-4 bg-success/10 rounded-lg">
+                  <p className="text-lg font-semibold">{selectedEquipmentData?.id}</p>
+                  <p className="text-muted-foreground">
+                    {selectedEquipmentData?.make} {selectedEquipmentData?.model}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedEquipmentData?.type} • {selectedEquipmentData?.location}
+                  </p>
                 </div>
-                <div>
-                  <Label className="text-sm font-medium">Type</Label>
-                  <p className="text-lg">{selectedEquipmentData.type}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Make & Model</Label>
-                  <p className="text-lg">{selectedEquipmentData.make} {selectedEquipmentData.model}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Location</Label>
-                  <p className="text-lg">{selectedEquipmentData.location}</p>
-                </div>
+                <Button
+                  onClick={handleProceed}
+                  className="btn-mining w-full"
+                >
+                  Start Inspection
+                </Button>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Action Buttons */}
-        <div className="flex gap-4">
-          <Button
-            onClick={handleProceed}
-            className="btn-mining flex-1"
-            disabled={!selectedEquipment}
-          >
-            Start Inspection
-          </Button>
-        </div>
       </div>
     </div>
   );
