@@ -10,9 +10,10 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOffline } from '@/contexts/OfflineContext';
 import { AddUserForm, AddEquipmentForm, CreateTemplateForm, ResetPasswordForm } from '@/components/AdminForms';
+import CategoryManager from '@/components/CategoryManager';
 import { 
   Settings, Users, Truck, FileText, Activity, 
-  Wifi, WifiOff, LogOut, Search, Plus, Edit, Trash2
+  Wifi, WifiOff, LogOut, Search, Plus, Edit, Trash2, Tag
 } from 'lucide-react';
 
 interface User {
@@ -205,7 +206,7 @@ const AdminPortal = () => {
         <Card>
           <CardContent className="pt-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-4 w-full">
+              <TabsList className="grid grid-cols-5 w-full">
                 <TabsTrigger value="users" className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
                   Users
@@ -213,6 +214,10 @@ const AdminPortal = () => {
                 <TabsTrigger value="equipment" className="flex items-center gap-2">
                   <Truck className="h-4 w-4" />
                   Equipment
+                </TabsTrigger>
+                <TabsTrigger value="categories" className="flex items-center gap-2">
+                  <Tag className="h-4 w-4" />
+                  Categories
                 </TabsTrigger>
                 <TabsTrigger value="forms" className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
@@ -327,6 +332,11 @@ const AdminPortal = () => {
                     </Card>
                   ))}
                 </div>
+              </TabsContent>
+
+              {/* Categories Management */}
+              <TabsContent value="categories" className="space-y-4">
+                <CategoryManager />
               </TabsContent>
 
               {/* Form Templates */}

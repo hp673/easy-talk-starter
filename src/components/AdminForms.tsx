@@ -165,11 +165,21 @@ export const AddEquipmentForm: React.FC<AddEquipmentFormProps> = ({ onSubmit }) 
     make: '',
     model: '',
     type: '',
+    category: '',
     location: '',
     serialNumber: '',
     year: '',
     status: 'active'
   });
+
+  // Mock categories - in real app, this would come from props or context
+  const categories = [
+    'Haul Trucks',
+    'Excavators', 
+    'Wheel Loaders',
+    'Dozers',
+    'Graders'
+  ];
 
   const generateQRCode = (equipmentId: string) => {
     // Simulate QR code generation
@@ -216,6 +226,7 @@ export const AddEquipmentForm: React.FC<AddEquipmentFormProps> = ({ onSubmit }) 
       make: '',
       model: '',
       type: '',
+      category: '',
       location: '',
       serialNumber: '',
       year: '',
@@ -265,22 +276,40 @@ export const AddEquipmentForm: React.FC<AddEquipmentFormProps> = ({ onSubmit }) 
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="type">Type</Label>
-            <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value})}>
-              <SelectTrigger className="input-mining">
-                <SelectValue placeholder="Select equipment type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Haul Truck">Haul Truck</SelectItem>
-                <SelectItem value="Excavator">Excavator</SelectItem>
-                <SelectItem value="Wheel Loader">Wheel Loader</SelectItem>
-                <SelectItem value="Bulldozer">Bulldozer</SelectItem>
-                <SelectItem value="Grader">Grader</SelectItem>
-                <SelectItem value="Drill">Drill</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
+                <SelectTrigger className="input-mining">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map(category => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="type">Type</Label>
+              <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value})}>
+                <SelectTrigger className="input-mining">
+                  <SelectValue placeholder="Select equipment type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Haul Truck">Haul Truck</SelectItem>
+                  <SelectItem value="Excavator">Excavator</SelectItem>
+                  <SelectItem value="Wheel Loader">Wheel Loader</SelectItem>
+                  <SelectItem value="Bulldozer">Bulldozer</SelectItem>
+                  <SelectItem value="Grader">Grader</SelectItem>
+                  <SelectItem value="Drill">Drill</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="space-y-2">
