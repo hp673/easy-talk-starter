@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
@@ -93,8 +93,8 @@ const fieldTypeIcons = {
 };
 
 const FormTemplateManager = () => {
-  const [activeTab, setActiveTab] = useState('list');
   const [templates, setTemplates] = useState<FormTemplate[]>(mockTemplates);
+  const [showCreateForm, setShowCreateForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [selectedTemplate, setSelectedTemplate] = useState<FormTemplate | null>(null);
@@ -237,7 +237,7 @@ const FormTemplateManager = () => {
       sections: [],
       isPublished: false
     });
-    setActiveTab('list');
+    setShowCreateForm(false);
     setIsEditing(false);
     setSelectedTemplate(null);
   };
@@ -246,7 +246,7 @@ const FormTemplateManager = () => {
     setSelectedTemplate(template);
     setFormBuilder(template);
     setIsEditing(true);
-    setActiveTab('create');
+    setShowCreateForm(true);
   };
 
   const duplicateTemplate = (template: FormTemplate) => {
@@ -353,33 +353,42 @@ const FormTemplateManager = () => {
 
   return (
     <div className="space-y-4">
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="flex justify-between items-center">
-          <TabsList>
-            <TabsTrigger value="list">Templates List</TabsTrigger>
-            <TabsTrigger value="create">Create New Template</TabsTrigger>
-          </TabsList>
-          
-          {activeTab === 'list' && (
-            <Button onClick={() => {
-              setFormBuilder({
-                name: '',
-                category: '',
-                interval: 'daily',
-                linkedEquipment: [],
-                sections: [],
-                isPublished: false
-              });
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Form Templates</h2>
+        {!showCreateForm && (
+          <Button onClick={() => {
+            setFormBuilder({
+              name: '',
+              category: '',
+              interval: 'daily',
+              linkedEquipment: [],
+              sections: [],
+              isPublished: false
+            });
+            setIsEditing(false);
+            setShowCreateForm(true);
+          }}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create New Template
+          </Button>
+        )}
+        {showCreateForm && (
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              setShowCreateForm(false);
               setIsEditing(false);
-              setActiveTab('create');
-            }}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create New Template
-            </Button>
-          )}
-        </div>
+              setSelectedTemplate(null);
+            }}
+          >
+            <X className="h-4 w-4 mr-2" />
+            Cancel
+          </Button>
+        )}
+      </div>
 
-        <TabsContent value="list" className="space-y-4">
+      {!showCreateForm && (
+        <div className="space-y-4">
           {/* Search and Filters */}
           <div className="flex gap-4">
             <div className="relative flex-1">
@@ -494,9 +503,11 @@ const FormTemplateManager = () => {
               </CardContent>
             </Card>
           )}
-        </TabsContent>
+        </div>
+      )}
 
-        <TabsContent value="create" className="space-y-6">
+      {showCreateForm && (
+        <div className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>{isEditing ? 'Edit Template' : 'Create New Template'}</CardTitle>
@@ -619,7 +630,7 @@ const FormTemplateManager = () => {
               {/* Save Actions */}
               <div className="flex justify-end gap-2 pt-4 border-t">
                 <Button variant="outline" onClick={() => {
-                  setActiveTab('list');
+                  setShowCreateForm(false);
                   setFormBuilder({
                     name: '',
                     category: '',
@@ -638,8 +649,8 @@ const FormTemplateManager = () => {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
     </div>
   );
 };
