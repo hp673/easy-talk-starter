@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useOffline } from '@/contexts/OfflineContext';
 import { AddUserForm, AddEquipmentForm, CreateTemplateForm, ResetPasswordForm } from '@/components/AdminForms';
 import CategoryManager from '@/components/CategoryManager';
+import FormTemplateManager from '@/components/FormTemplateManager';
 import { 
   Settings, Users, Truck, FileText, Activity, 
   Wifi, WifiOff, LogOut, Search, Plus, Edit, Trash2, Tag
@@ -341,25 +342,7 @@ const AdminPortal = () => {
 
               {/* Form Templates */}
               <TabsContent value="forms" className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold">Form Template Editor</h3>
-                  <CreateTemplateForm />
-                </div>
-
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="text-center py-8">
-                      <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h4 className="text-lg font-medium mb-2">JSON Form Template Editor</h4>
-                      <p className="text-muted-foreground mb-4">
-                        Configure inspection form fields, validation rules, and workflows using JSON structure
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Create templates with sections and fields that operators can use for inspections
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
+                <FormTemplateManager />
               </TabsContent>
 
               {/* Audit Logs */}
