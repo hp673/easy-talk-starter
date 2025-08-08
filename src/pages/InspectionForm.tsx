@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from '@/hooks/use-toast';
@@ -206,31 +207,29 @@ const InspectionForm = () => {
         <CardTitle className="flex items-center gap-2">
           <span className="text-2xl">📋</span>
           Basic Information
+          <Badge variant="secondary" className="ml-2">Read Only</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="equipment" className="text-base font-medium">
-              Equipment ID <span className="text-destructive">*</span>
-            </Label>
+            <Label htmlFor="equipment" className="text-base font-medium">Equipment ID</Label>
             <Input
-              {...register('equipment', { required: 'Equipment ID is required' })}
+              {...register('equipment')}
               id="equipment"
-              className={cn("input-mining", errors.equipment && "border-destructive ring-destructive")}
+              className="input-mining bg-muted cursor-not-allowed"
               readOnly
+              disabled
             />
-            {errors.equipment && (
-              <p className="text-destructive text-sm font-medium">{errors.equipment.message}</p>
-            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="make_and_model" className="text-base font-medium">Make and Model</Label>
             <Input
               {...register('make_and_model')}
               id="make_and_model"
-              className="input-mining"
+              className="input-mining bg-muted cursor-not-allowed"
               readOnly
+              disabled
             />
           </div>
         </div>
@@ -536,11 +535,21 @@ const InspectionForm = () => {
                   <ChevronDown className="h-4 w-4 opacity-50" />
                 </SelectTrigger>
                 <SelectContent className="bg-popover z-50">
-                  <SelectItem value="excellent">Excellent</SelectItem>
-                  <SelectItem value="good">Good</SelectItem>
-                  <SelectItem value="fair">Fair</SelectItem>
-                  <SelectItem value="poor">Poor</SelectItem>
-                  <SelectItem value="critical">Critical - Do Not Operate</SelectItem>
+                  <SelectItem value="excellent" className="text-success font-medium">
+                    ✅ Excellent
+                  </SelectItem>
+                  <SelectItem value="good" className="text-success">
+                    Good
+                  </SelectItem>
+                  <SelectItem value="fair" className="text-warning font-medium">
+                    ⚠️ Fair
+                  </SelectItem>
+                  <SelectItem value="poor" className="text-warning font-bold">
+                    ⚠️ Poor
+                  </SelectItem>
+                  <SelectItem value="critical" className="text-destructive font-bold bg-destructive/10 border border-destructive/20">
+                    🚨 Critical - Do Not Operate
+                  </SelectItem>
                 </SelectContent>
               </Select>
             )}
