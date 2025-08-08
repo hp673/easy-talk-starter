@@ -160,6 +160,18 @@ Optimized for sunlight readability and glove-friendly operation.
            focus-visible:border-ring transition-colors;
   }
   
+  /* Error state styling for better visibility */
+  .input-error {
+    @apply border-destructive ring-2 ring-destructive/20 focus-visible:ring-destructive;
+  }
+  
+  /* Enhanced dropdown styling for industrial use */
+  .dropdown-mining {
+    @apply min-h-12 bg-input border border-border rounded-lg px-4 text-base
+           focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1
+           focus-visible:border-ring transition-colors cursor-pointer;
+  }
+  
   /* Status indicators */
   .status-online {
     @apply inline-flex items-center gap-2 bg-success/10 text-success px-3 py-1 rounded-full text-sm font-medium;
