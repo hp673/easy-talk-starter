@@ -18,6 +18,7 @@ import SiteManagerDashboard from "./pages/SiteManagerDashboard";
 import AdminPortal from "./pages/AdminPortal";
 import NotificationUI from "./pages/NotificationUI";
 import OperatorHistoryView from "./pages/OperatorHistoryView";
+import WorkplaceExams from "./pages/WorkplaceExams";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/" element={<LoginScreen />} />
               <Route path="/operator-dashboard" element={<OperatorDashboard />} />
               <Route path="/maintenance-history" element={<OperatorHistoryView />} />
+              <Route path="/workplace-exams" element={<WorkplaceExams />} />
               <Route path="/equipment-selection" element={<EquipmentSelection />} />
               <Route path="/inspection-form" element={<InspectionForm />} />
               <Route path="/defect-documentation" element={<DefectDocumentation />} />

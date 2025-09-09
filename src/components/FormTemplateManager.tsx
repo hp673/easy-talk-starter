@@ -39,6 +39,7 @@ interface FormSection {
 interface FormTemplate {
   id: string;
   name: string;
+  type: 'equipment' | 'workplace';
   category: string;
   interval: 'daily' | 'weekly' | 'monthly';
   linkedEquipment: string[];
@@ -52,6 +53,7 @@ const mockTemplates: FormTemplate[] = [
   {
     id: '1',
     name: 'Daily Equipment Check',
+    type: 'equipment',
     category: 'Excavator',
     interval: 'daily',
     linkedEquipment: ['CAT-789C-001', 'KOM-PC5500-002'],
@@ -72,6 +74,7 @@ const mockTemplates: FormTemplate[] = [
   {
     id: '2',
     name: 'Weekly Hydraulic Inspection',
+    type: 'equipment',
     category: 'Loader',
     interval: 'weekly',
     linkedEquipment: ['CAT-994K-003'],
@@ -101,6 +104,7 @@ const FormTemplateManager = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formBuilder, setFormBuilder] = useState<Partial<FormTemplate>>({
     name: '',
+    type: 'equipment',
     category: '',
     interval: 'daily',
     linkedEquipment: [],
@@ -205,6 +209,7 @@ const FormTemplateManager = () => {
     const templateData: FormTemplate = {
       id: isEditing ? selectedTemplate!.id : Date.now().toString(),
       name: formBuilder.name!,
+      type: formBuilder.type as 'equipment' | 'workplace',
       category: formBuilder.category!,
       interval: formBuilder.interval as 'daily' | 'weekly' | 'monthly',
       linkedEquipment: formBuilder.linkedEquipment || [],
@@ -231,6 +236,7 @@ const FormTemplateManager = () => {
     // Reset form
     setFormBuilder({
       name: '',
+      type: 'equipment',
       category: '',
       interval: 'daily',
       linkedEquipment: [],
@@ -354,11 +360,18 @@ const FormTemplateManager = () => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Form Templates</h2>
+        <div>
+          <h2 className="text-xl font-semibold flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Equipment Form Templates
+          </h2>
+          <p className="text-sm text-muted-foreground">Manage equipment inspection form templates</p>
+        </div>
         {!showCreateForm && (
           <Button onClick={() => {
             setFormBuilder({
               name: '',
+              type: 'equipment',
               category: '',
               interval: 'daily',
               linkedEquipment: [],
@@ -369,7 +382,7 @@ const FormTemplateManager = () => {
             setShowCreateForm(true);
           }}>
             <Plus className="h-4 w-4 mr-2" />
-            Create New Template
+            Create Equipment Template
           </Button>
         )}
         {showCreateForm && (

@@ -16,7 +16,8 @@ import {
   Clock,
   Upload,
   AlertCircle,
-  History
+  History,
+  Settings
 } from 'lucide-react';
 
 const OperatorDashboard = () => {
@@ -147,6 +148,29 @@ const OperatorDashboard = () => {
                 onClick={() => navigate('/maintenance-history')}
               >
                 View History
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center space-y-4">
+              <div className="p-3 bg-blue-100 rounded-lg mx-auto w-fit">
+                <Settings className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold">Workplace Exams</h3>
+                <p className="text-sm text-muted-foreground">
+                  Conduct site workplace examinations
+                </p>
+              </div>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => navigate('/workplace-exams')}
+              >
+                View Workplace Exams
               </Button>
             </div>
           </CardContent>
