@@ -49,6 +49,7 @@ interface WorkplaceExamData {
   date: string;
   location: string;
   inspector: string;
+  shift?: string;
   status: 'in-progress' | 'completed' | 'locked';
   areas: {
     [areaId: string]: {
@@ -74,30 +75,38 @@ interface WorkplaceExamData {
 const mockWorkplaceTemplates: WorkplaceTemplate[] = [
   {
     id: '1',
-    name: 'Daily Site Workplace Exam - Quarry A',
+    name: 'Examination of Working Places - Daily Site Workplace Exam',
     areas: [
       {
-        id: 'quarry',
-        name: 'Quarry/Highwalls/Berms',
-        description: 'The current mining area',
+        id: 'regular-areas',
+        name: 'Location of all areas examined',
+        description: 'Mark "CAN" box if "Corrective Action Needed" is found. IF conditions that may adversely affect safety or health cannot be corrected before miners are potentially exposed the miners must be promptly notified of the condition',
         subAreas: [
-          { id: 'highwalls', name: 'Highwalls around quarry and/or mining area', description: '', canToggle: true, notesRequired: false, photoRequired: false },
-          { id: 'berms', name: 'All berms around crusher hopper, stockpiles and ramps', description: '', canToggle: true, notesRequired: false, photoRequired: false }
+          { id: 'plant1', name: 'Plant 1', description: '', canToggle: true, notesRequired: false, photoRequired: false },
+          { id: 'plant2', name: 'Plant 2', description: '', canToggle: true, notesRequired: false, photoRequired: false },
+          { id: 'quarry', name: 'Quarry', description: 'The current mining area', canToggle: true, notesRequired: false, photoRequired: false },
+          { id: 'crusher-screener', name: 'Crusher/Screener/Conveyor', description: 'Crusher and screener include immediate area', canToggle: true, notesRequired: false, photoRequired: false },
+          { id: 'roadways', name: 'Roadways/Ramps', description: 'All roadways within site and ramps around crusher, stockpiles or roadways', canToggle: true, notesRequired: false, photoRequired: false },
+          { id: 'maintenance', name: 'Maintenance Areas', description: 'Mantenance area and surrounding access ways', canToggle: true, notesRequired: false, photoRequired: false },
+          { id: 'storage', name: 'Storage Areas', description: 'Storage connex or building and all access ways', canToggle: true, notesRequired: false, photoRequired: false },
+          { id: 'scalehouse', name: 'Scalehouse', description: 'Scalehouse including immediate surounding area', canToggle: true, notesRequired: false, photoRequired: false }
         ]
       },
       {
-        id: 'crusher',
-        name: 'Crusher/Screener/Conveyors',
-        description: 'Crusher and screener include immediate area',
+        id: 'not-regular',
+        name: 'Location of all areas NOT Regularly Inspected',
+        description: 'Areas Not Regularly Inspected MUST be inspected BEFORE work begins or as miners begin work in that place',
         subAreas: [
-          { id: 'crusher-area', name: 'Crusher immediate area', description: '', canToggle: true, notesRequired: false, photoRequired: false },
-          { id: 'conveyor-systems', name: 'All conveyor systems and walkways', description: '', canToggle: true, notesRequired: false, photoRequired: false }
+          { id: 'wash-plant', name: 'Wash Plant', description: '', canToggle: true, notesRequired: false, photoRequired: false },
+          { id: 'other-areas', name: 'Other Areas', description: '', canToggle: true, notesRequired: false, photoRequired: false },
+          { id: 'highwalls', name: 'Highwalls', description: 'All highwalls around quarry and/or mining area', canToggle: true, notesRequired: false, photoRequired: false },
+          { id: 'berms', name: 'Berms', description: 'All berms around crusher hopper, stockpiles and ramps', canToggle: true, notesRequired: false, photoRequired: false }
         ]
       }
     ],
-    primaryInspector: 'john-smith',
-    backupInspector: 'sarah-johnson',
-    helpText: 'Working places must be examined at least once each shift, before work begins or as miners begin work in that place. Record ALL conditions found on entire shift.',
+    primaryInspector: 'OP001',
+    backupInspector: 'MAINT002',
+    helpText: 'Working places must be examined at least once each shift, before work begins or as miners begin work in that place. Record ALL conditions found on entire shift. A competent person should be Task Trained to recognize hazards and conditions that are expected or known to occur in a specific work area.',
     canResolutionRules: {
       requireNotification: true,
       requireSignoff: true
@@ -131,40 +140,55 @@ const mockExamData: WorkplaceExamData[] = [
   {
     id: '1',
     templateId: '1',
-    templateName: 'Daily Site Workplace Exam - Quarry A',
+    templateName: 'Examination of Working Places - Daily Site Workplace Exam',
     date: '2024-01-22',
-    location: 'Quarry A - Main Pit',
-    inspector: 'John Smith',
+    location: 'Main Quarry Site',
+    inspector: 'OP001',
+    shift: '1st',
     status: 'completed',
     areas: {
-      quarry: {
-        highwalls: { status: 'ok', notes: 'Stable condition, no loose material observed' },
-        berms: { status: 'can', notes: 'Erosion damage on south berm requires repair', canNotified: true, canMethod: 'radio', canTime: '08:30' }
+      'regular-areas': {
+        plant1: { status: 'ok', notes: 'All equipment functioning normally' },
+        plant2: { status: 'can', notes: 'Conveyor belt showing wear, needs replacement', canNotified: true, canMethod: 'radio', canTime: '08:30' },
+        quarry: { status: 'ok' },
+        'crusher-screener': { status: 'ok' },
+        roadways: { status: 'ok' },
+        maintenance: { status: 'ok' },
+        storage: { status: 'ok' },
+        scalehouse: { status: 'ok' }
       },
-      crusher: {
-        'crusher-area': { status: 'ok' },
-        'conveyor-systems': { status: 'ok' }
+      'not-regular': {
+        'wash-plant': { status: 'ok' },
+        'other-areas': { status: 'ok' },
+        highwalls: { status: 'ok', notes: 'Stable condition, no loose material observed' },
+        berms: { status: 'can', notes: 'Erosion damage on south berm requires repair', canNotified: true, canMethod: 'phone', canTime: '09:15' }
       }
     },
-    additionalNotes: 'Overall site condition good. Weather conditions favorable.',
+    additionalNotes: 'Overall site condition good. Weather conditions favorable. Conveyor belt replacement scheduled for next maintenance window.',
     lastSaved: '2024-01-22T10:30:00Z',
     unsynced: false
   },
   {
     id: '2',
     templateId: '1',
-    templateName: 'Daily Site Workplace Exam - Quarry A',
+    templateName: 'Examination of Working Places - Daily Site Workplace Exam',
     date: '2024-01-23',
-    location: 'Quarry A - Main Pit',
-    inspector: 'John Smith',
+    location: 'Main Quarry Site',
+    inspector: 'OP001',
+    shift: '1st',
     status: 'in-progress',
     areas: {
-      quarry: {
+      'regular-areas': {
+        plant1: { status: 'ok' },
+        plant2: { status: 'can', notes: 'Conveyor belt still requires attention from previous day', canNotified: true, canMethod: 'radio', canTime: '07:45' },
+        quarry: { status: 'ok' }
+      },
+      'not-regular': {
         highwalls: { status: 'ok' },
-        berms: { status: 'can', notes: 'Previous erosion issue still requires attention', canNotified: true, canMethod: 'phone', canTime: '07:45' }
+        berms: { status: 'can', notes: 'Previous erosion issue still requires attention', canNotified: true, canMethod: 'phone', canTime: '08:00' }
       }
     },
-    lastSaved: '2024-01-23T08:00:00Z',
+    lastSaved: '2024-01-23T08:15:00Z',
     unsynced: true
   }
 ];
@@ -190,9 +214,9 @@ const WorkplaceExams = () => {
   });
 
   const canEdit = (exam: WorkplaceExamData, template: WorkplaceTemplate) => {
-    const currentUser = user?.name || '';
-    const isPrimaryInspector = template.primaryInspector === currentUser.toLowerCase().replace(' ', '-');
-    const isBackupInspector = template.backupInspector === currentUser.toLowerCase().replace(' ', '-');
+    const currentUser = user?.id || '';
+    const isPrimaryInspector = template.primaryInspector === currentUser;
+    const isBackupInspector = template.backupInspector === currentUser;
     
     return (isPrimaryInspector || isBackupInspector) && 
            exam.status !== 'locked' && 
@@ -219,7 +243,8 @@ const WorkplaceExams = () => {
       templateName: template.name,
       date: new Date().toISOString().split('T')[0],
       location: '',
-      inspector: user?.name || 'Current User',
+      inspector: user?.id || 'Current User',
+      shift: '1st',
       status: 'in-progress',
       areas: {},
       lastSaved: new Date().toISOString(),

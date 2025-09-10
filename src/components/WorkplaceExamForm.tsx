@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { 
   MapPin, Camera, Save, Clock, AlertTriangle, CheckCircle, 
@@ -22,6 +23,7 @@ interface WorkplaceExamData {
   date: string;
   location: string;
   inspector: string;
+  shift?: string;
   status: 'in-progress' | 'completed' | 'locked';
   areas: {
     [areaId: string]: {
@@ -89,6 +91,7 @@ const WorkplaceExamForm: React.FC<WorkplaceExamFormProps> = ({
     date: examData?.date || new Date().toISOString().split('T')[0],
     location: examData?.location || '',
     inspector: examData?.inspector || 'Current User',
+    shift: examData?.shift || '1st',
     status: examData?.status || 'in-progress',
     areas: examData?.areas || {},
     additionalNotes: examData?.additionalNotes || '',
@@ -306,7 +309,7 @@ const WorkplaceExamForm: React.FC<WorkplaceExamFormProps> = ({
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Basic Info */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="space-y-2">
               <Label htmlFor="date">Date</Label>
               <Input
@@ -331,7 +334,7 @@ const WorkplaceExamForm: React.FC<WorkplaceExamFormProps> = ({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="inspector">Inspector</Label>
+              <Label htmlFor="inspector">Competent Person</Label>
               <Input
                 id="inspector"
                 value={formData.inspector}
@@ -340,6 +343,28 @@ const WorkplaceExamForm: React.FC<WorkplaceExamFormProps> = ({
                 disabled
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="shift">Shift</Label>
+              <Select
+                value={formData.shift || '1st'}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, shift: value }))}
+                disabled={isFormReadOnly}
+              >
+                <SelectTrigger className={isFormReadOnly ? "bg-muted cursor-not-allowed" : ""}>
+                  <SelectValue placeholder="Select shift" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1st">1st</SelectItem>
+                  <SelectItem value="2nd">2nd</SelectItem>
+                  <SelectItem value="3rd">3rd</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <div className="text-sm text-muted-foreground bg-blue-50 p-3 rounded-lg border border-blue-200">
+            <p className="font-medium mb-1">Instructions:</p>
+            <p>A competent person should be Task Trained to recognize hazards and conditions that are expected or known to occur in a specific work area</p>
           </div>
         </CardContent>
       </Card>
@@ -376,37 +401,44 @@ const WorkplaceExamForm: React.FC<WorkplaceExamFormProps> = ({
                       </div>
                     </div>
 
-                    {/* Status buttons */}
+                     {/* Status Toggle Switches - Matching Manual Form */}
                     {subArea.canToggle && (
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant={subAreaData.status === 'ok' ? 'default' : 'outline'}
-                          onClick={() => updateSubAreaStatus(area.id, subArea.id, 'ok')}
-                          disabled={isFormReadOnly}
-                          className={subAreaData.status === 'ok' ? 'bg-success hover:bg-success/90' : ''}
-                        >
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          OK
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={subAreaData.status === 'can' ? 'destructive' : 'outline'}
-                          onClick={() => updateSubAreaStatus(area.id, subArea.id, 'can')}
-                          disabled={isFormReadOnly}
-                        >
-                          <AlertTriangle className="h-4 w-4 mr-1" />
-                          CAN
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={subAreaData.status === 'na' ? 'secondary' : 'outline'}
-                          onClick={() => updateSubAreaStatus(area.id, subArea.id, 'na')}
-                          disabled={isFormReadOnly}
-                        >
-                          <Minus className="h-4 w-4 mr-1" />
-                          N/A
-                        </Button>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* OK Toggle */}
+                        <div className="flex items-center justify-between p-3 border rounded-lg bg-background">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className={`h-4 w-4 ${subAreaData.status === 'ok' ? 'text-success' : 'text-muted-foreground'}`} />
+                            <Label className="font-medium">OK</Label>
+                          </div>
+                          <Switch
+                            checked={subAreaData.status === 'ok'}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                updateSubAreaStatus(area.id, subArea.id, 'ok');
+                              }
+                            }}
+                            disabled={isFormReadOnly}
+                          />
+                        </div>
+                        
+                        {/* CAN Toggle */}
+                        <div className="flex items-center justify-between p-3 border rounded-lg bg-background">
+                          <div className="flex items-center gap-2">
+                            <AlertTriangle className={`h-4 w-4 ${subAreaData.status === 'can' ? 'text-destructive' : 'text-muted-foreground'}`} />
+                            <Label className="font-medium text-destructive">CAN (Corrective Action Needed)</Label>
+                          </div>
+                          <Switch
+                            checked={subAreaData.status === 'can'}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                updateSubAreaStatus(area.id, subArea.id, 'can');
+                              } else {
+                                updateSubAreaStatus(area.id, subArea.id, 'ok');
+                              }
+                            }}
+                            disabled={isFormReadOnly}
+                          />
+                        </div>
                       </div>
                     )}
 
@@ -533,6 +565,104 @@ const WorkplaceExamForm: React.FC<WorkplaceExamFormProps> = ({
           </CardContent>
         </Card>
       ))}
+
+      {/* Corrective Action Needed Summary */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-destructive" />
+            Corrective Action Needed that was NOT Promptly Corrected
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Mine operators must promptly initiate corrective action of any condition that may adversely affect miners' safety and health
+          </p>
+        </CardHeader>
+        <CardContent>
+          {(() => {
+            const canItems: Array<{areaName: string, subAreaName: string, data: any}> = [];
+            template.areas.forEach(area => {
+              area.subAreas.forEach(subArea => {
+                const data = getSubAreaData(area.id, subArea.id);
+                if (data.status === 'can') {
+                  canItems.push({
+                    areaName: area.name,
+                    subAreaName: subArea.name,
+                    data
+                  });
+                }
+              });
+            });
+
+            if (canItems.length === 0) {
+              return (
+                <div className="text-center py-8 text-muted-foreground">
+                  <CheckCircle className="h-8 w-8 mx-auto mb-2 text-success" />
+                  <p>No corrective actions needed at this time</p>
+                </div>
+              );
+            }
+
+            return (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-2 font-semibold text-sm border-b pb-2">
+                  <div>Issue</div>
+                  <div>Notified Affected</div>
+                  <div>Date Corrected</div>
+                  <div>Status</div>
+                </div>
+                {canItems.map((item, index) => (
+                  <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-2 p-3 border rounded-lg bg-destructive/5">
+                    <div className="space-y-1">
+                      <p className="font-medium text-sm">{item.subAreaName}</p>
+                      <p className="text-xs text-muted-foreground">{item.areaName}</p>
+                      {item.data.notes && (
+                        <p className="text-xs italic">{item.data.notes}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center">
+                      {item.data.canNotified ? (
+                        <div className="flex items-center gap-1 text-success">
+                          <CheckCircle className="h-4 w-4" />
+                          <span className="text-sm">YES</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 text-destructive">
+                          <XCircle className="h-4 w-4" />
+                          <span className="text-sm">NO</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      {item.data.canResolved ? (
+                        <div className="text-sm text-success">
+                          {item.data.resolvedDate || 'Not specified'}
+                        </div>
+                      ) : (
+                        <div className="text-sm text-muted-foreground">
+                          Pending
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      {item.data.canResolved ? (
+                        <Badge className="bg-success text-success-foreground">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Resolved
+                        </Badge>
+                      ) : (
+                        <Badge variant="destructive">
+                          <Clock className="h-3 w-3 mr-1" />
+                          Open
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+        </CardContent>
+      </Card>
 
       {/* Additional Notes */}
       <Card>
