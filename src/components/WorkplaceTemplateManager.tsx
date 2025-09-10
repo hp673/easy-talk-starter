@@ -512,14 +512,17 @@ const WorkplaceTemplateManager = () => {
                     <div className="space-y-2">
                       <Label htmlFor="backup">Backup Inspector</Label>
                       <Select
-                        value={formBuilder.backupInspector || ''}
-                        onValueChange={(value) => setFormBuilder(prev => ({ ...prev, backupInspector: value }))}
+                        value={formBuilder.backupInspector || 'none'}
+                        onValueChange={(value) => setFormBuilder(prev => ({ 
+                          ...prev, 
+                          backupInspector: value === "none" ? "" : value 
+                        }))}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select backup inspector" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">None</SelectItem>
+                          <SelectItem value="none">None</SelectItem>
                           {mockInspectors.map(inspector => (
                             <SelectItem key={inspector.id} value={inspector.id}>
                               {inspector.name} - {inspector.role}
