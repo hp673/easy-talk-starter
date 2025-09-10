@@ -153,24 +153,27 @@ const OperatorDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-primary/5 border-primary/20">
           <CardContent className="pt-6">
             <div className="text-center space-y-4">
-              <div className="p-3 bg-blue-100 rounded-lg mx-auto w-fit">
-                <Settings className="h-6 w-6 text-blue-600" />
+              <div className="p-3 bg-primary/10 rounded-lg mx-auto w-fit">
+                <Settings className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h3 className="font-semibold">Workplace Exams</h3>
+                <h3 className="font-semibold text-primary">Workplace Exams</h3>
                 <p className="text-sm text-muted-foreground">
-                  Conduct site workplace examinations
+                  Conduct daily site workplace examinations
                 </p>
+                <Badge className="mt-2 bg-success text-success-foreground">
+                  Primary Inspector
+                </Badge>
               </div>
               <Button 
-                variant="outline" 
-                className="w-full"
+                className="w-full bg-primary hover:bg-primary/90"
                 onClick={() => navigate('/workplace-exams')}
               >
-                View Workplace Exams
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Start Workplace Exam
               </Button>
             </div>
           </CardContent>

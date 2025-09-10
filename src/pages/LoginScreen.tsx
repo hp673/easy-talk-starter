@@ -213,14 +213,20 @@ const LoginScreen = () => {
         )}
 
         {/* Demo Credentials */}
-        <Card className="bg-muted/50">
+        <Card className="bg-primary/10 border-primary/20">
           <CardContent className="pt-6">
-              <div className="text-xs space-y-2">
-                <p className="font-medium">Demo Credentials:</p>
-                <div className="grid grid-cols-1 gap-2 text-xs">
-                  <div><strong>Operator:</strong> OP001: 1234</div>
-                  <div><strong>Maintainer:</strong> MAINT002: 5678</div>
-                  <div><strong>Admin:</strong> ADM003: 0000</div>
+              <div className="text-sm space-y-3">
+                <p className="font-medium text-primary">🔑 Demo Credentials - Primary User Access:</p>
+                <div className="space-y-2">
+                  <div className="p-3 bg-success/10 border border-success/20 rounded-lg">
+                    <div className="font-semibold text-success">Primary Inspector (Workplace Exams)</div>
+                    <div className="text-sm">User ID: <strong>OP001</strong> | PIN: <strong>1234</strong></div>
+                    <div className="text-xs text-muted-foreground mt-1">✓ Can create and edit workplace examinations</div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 text-xs">
+                    <div><strong>Maintainer:</strong> MAINT002: 5678</div>
+                    <div><strong>Admin:</strong> ADM003: 0000</div>
+                  </div>
                 </div>
               </div>
           </CardContent>
