@@ -11,9 +11,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
+import { NotificationConfigModal } from '@/components/NotificationConfigModal';
 import { 
   Plus, Search, Edit, Trash2, Copy, Eye, 
-  FileText, GripVertical, X, Settings, Camera, Calendar, Type, CheckSquare, Hash
+  FileText, GripVertical, X, Settings, Camera, Calendar, Type, CheckSquare, Hash, Bell
 } from 'lucide-react';
 
 interface FormField {
@@ -102,6 +103,9 @@ const FormTemplateManager = () => {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [selectedTemplate, setSelectedTemplate] = useState<FormTemplate | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [notificationModalOpen, setNotificationModalOpen] = useState(false);
+  const [notificationTemplateId, setNotificationTemplateId] = useState<string>('');
+  const [notificationTemplateName, setNotificationTemplateName] = useState<string>('');
   const [formBuilder, setFormBuilder] = useState<Partial<FormTemplate>>({
     name: '',
     type: 'equipment',
@@ -359,6 +363,14 @@ const FormTemplateManager = () => {
 
   return (
     <div className="space-y-4">
+      <NotificationConfigModal
+        formId={notificationTemplateId}
+        formName={notificationTemplateName}
+        formType="equipment"
+        isOpen={notificationModalOpen}
+        onClose={() => setNotificationModalOpen(false)}
+      />
+      
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-xl font-semibold flex items-center gap-2">
@@ -456,6 +468,18 @@ const FormTemplateManager = () => {
                       <span className="text-sm text-muted-foreground">
                         Updated: {template.lastUpdated}
                       </span>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => {
+                          setNotificationTemplateId(template.id);
+                          setNotificationTemplateName(template.name);
+                          setNotificationModalOpen(true);
+                        }}
+                        title="Configure Notifications"
+                      >
+                        <Bell className="h-3 w-3" />
+                      </Button>
                       <Button size="sm" variant="outline" onClick={() => editTemplate(template)}>
                         <Edit className="h-3 w-3" />
                       </Button>

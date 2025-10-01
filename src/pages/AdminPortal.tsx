@@ -13,9 +13,10 @@ import { AddUserForm, AddEquipmentForm, CreateTemplateForm, ResetPasswordForm } 
 import CategoryManager from '@/components/CategoryManager';
 import FormTemplateManager from '@/components/FormTemplateManager';
 import WorkplaceTemplateManager from '@/components/WorkplaceTemplateManager';
+import { NotificationExecutionMonitor } from '@/components/NotificationExecutionMonitor';
 import { 
   Settings, Users, Truck, FileText, Activity, 
-  Wifi, WifiOff, LogOut, Search, Plus, Edit, Trash2, Tag
+  Wifi, WifiOff, LogOut, Search, Plus, Edit, Trash2, Tag, Bell
 } from 'lucide-react';
 
 interface User {
@@ -208,7 +209,7 @@ const AdminPortal = () => {
         <Card>
           <CardContent className="pt-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-6 w-full">
+              <TabsList className="grid grid-cols-7 w-full">
                 <TabsTrigger value="users" className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
                   Users
@@ -228,6 +229,10 @@ const AdminPortal = () => {
                 <TabsTrigger value="workplace" className="flex items-center gap-2">
                   <Settings className="h-4 w-4" />
                   Workplace Forms
+                </TabsTrigger>
+                <TabsTrigger value="notifications" className="flex items-center gap-2">
+                  <Bell className="h-4 w-4" />
+                  Notifications
                 </TabsTrigger>
                 <TabsTrigger value="logs" className="flex items-center gap-2">
                   <Activity className="h-4 w-4" />
@@ -353,6 +358,11 @@ const AdminPortal = () => {
               {/* Workplace Form Templates */}
               <TabsContent value="workplace" className="space-y-4">
                 <WorkplaceTemplateManager />
+              </TabsContent>
+
+              {/* Notifications */}
+              <TabsContent value="notifications" className="space-y-4">
+                <NotificationExecutionMonitor />
               </TabsContent>
 
               {/* Audit Logs */}
