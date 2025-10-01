@@ -14,7 +14,110 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      notification_configs: {
+        Row: {
+          created_at: string
+          created_by: string
+          delivery_methods: Database["public"]["Enums"]["delivery_method"][]
+          form_id: string
+          form_name: string
+          form_type: string
+          id: string
+          is_active: boolean
+          notification_type: Database["public"]["Enums"]["notification_type"]
+          recipients: Database["public"]["Enums"]["recipient_group"][]
+          rrule: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          delivery_methods?: Database["public"]["Enums"]["delivery_method"][]
+          form_id: string
+          form_name: string
+          form_type: string
+          id?: string
+          is_active?: boolean
+          notification_type: Database["public"]["Enums"]["notification_type"]
+          recipients?: Database["public"]["Enums"]["recipient_group"][]
+          rrule: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          delivery_methods?: Database["public"]["Enums"]["delivery_method"][]
+          form_id?: string
+          form_name?: string
+          form_type?: string
+          id?: string
+          is_active?: boolean
+          notification_type?: Database["public"]["Enums"]["notification_type"]
+          recipients?: Database["public"]["Enums"]["recipient_group"][]
+          rrule?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      notification_executions: {
+        Row: {
+          completed: boolean
+          config_id: string
+          created_at: string
+          delivery_methods: Database["public"]["Enums"]["delivery_method"][]
+          error_message: string | null
+          executed_at: string | null
+          form_id: string
+          form_name: string
+          id: string
+          metadata: Json | null
+          notification_type: Database["public"]["Enums"]["notification_type"]
+          recipients: Database["public"]["Enums"]["recipient_group"][]
+          scheduled_time: string
+          status: string
+        }
+        Insert: {
+          completed?: boolean
+          config_id: string
+          created_at?: string
+          delivery_methods: Database["public"]["Enums"]["delivery_method"][]
+          error_message?: string | null
+          executed_at?: string | null
+          form_id: string
+          form_name: string
+          id?: string
+          metadata?: Json | null
+          notification_type: Database["public"]["Enums"]["notification_type"]
+          recipients: Database["public"]["Enums"]["recipient_group"][]
+          scheduled_time: string
+          status?: string
+        }
+        Update: {
+          completed?: boolean
+          config_id?: string
+          created_at?: string
+          delivery_methods?: Database["public"]["Enums"]["delivery_method"][]
+          error_message?: string | null
+          executed_at?: string | null
+          form_id?: string
+          form_name?: string
+          id?: string
+          metadata?: Json | null
+          notification_type?: Database["public"]["Enums"]["notification_type"]
+          recipients?: Database["public"]["Enums"]["recipient_group"][]
+          scheduled_time?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_executions_config_id_fkey"
+            columns: ["config_id"]
+            isOneToOne: false
+            referencedRelation: "notification_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +126,9 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      delivery_method: "email" | "sms"
+      notification_type: "pre_inspection" | "due_reminder" | "missed_reminder"
+      recipient_group: "operator" | "maintainer" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +255,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      delivery_method: ["email", "sms"],
+      notification_type: ["pre_inspection", "due_reminder", "missed_reminder"],
+      recipient_group: ["operator", "maintainer", "admin"],
+    },
   },
 } as const
