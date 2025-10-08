@@ -1,133 +1,123 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { 
-  Activity, Calendar, Users, Mail, AlertCircle, CheckCircle, 
-  XCircle, Clock, Play, RotateCw, Filter, Search 
+  Bell, Plus, Settings, FileText, Ticket, AlertTriangle, 
+  Wrench, Activity, CheckCircle2, Mail, MessageSquare
 } from 'lucide-react';
 
-interface SchedulerStats {
-  lastRun: string | null;
-  totalExecutions: number;
-  successCount: number;
-  failureCount: number;
-  pendingCount: number;
+interface EventNotification {
+  id: string;
+  name: string;
+  description: string;
+  icon: any;
+  isActive: boolean;
+  eventType: string;
+  deliveryMethods: string[];
+  recipientCount: number;
 }
 
-interface NotificationExecution {
+interface NotificationConfig {
   id: string;
-  config_id: string;
   form_id: string;
   form_name: string;
+  form_type: string;
   notification_type: string;
-  scheduled_time: string;
-  executed_at: string | null;
-  status: 'pending' | 'sent' | 'failed';
+  is_active: boolean;
   delivery_methods: string[];
-  recipients: string[];
-  error_message: string | null;
-  metadata: any;
-  completed: boolean;
-  created_at: string;
+  recipients: any[];
 }
 
 export const NotificationExecutionMonitor: React.FC = () => {
-  const [stats, setStats] = useState<SchedulerStats>({
-    lastRun: null,
-    totalExecutions: 0,
-    successCount: 0,
-    failureCount: 0,
-    pendingCount: 0,
-  });
-  const [executions, setExecutions] = useState<NotificationExecution[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedExecution, setSelectedExecution] = useState<NotificationExecution | null>(null);
-  const [showDetailDrawer, setShowDetailDrawer] = useState(false);
+  const [eventNotifications, setEventNotifications] = useState<EventNotification[]>([
+    {
+      id: '1',
+      name: 'Form Submitted',
+      description: 'Notify when an inspection or workplace exam form is submitted',
+      icon: FileText,
+      isActive: true,
+      eventType: 'form_submitted',
+      deliveryMethods: ['email', 'sms'],
+      recipientCount: 3,
+    },
+    {
+      id: '2',
+      name: 'Ticket Created',
+      description: 'Notify when a new maintenance ticket is created',
+      icon: Ticket,
+      isActive: true,
+      eventType: 'ticket_created',
+      deliveryMethods: ['email'],
+      recipientCount: 5,
+    },
+    {
+      id: '3',
+      name: 'Critical Defect Reported',
+      description: 'Immediate notification for critical safety issues',
+      icon: AlertTriangle,
+      isActive: true,
+      eventType: 'critical_defect',
+      deliveryMethods: ['email', 'sms'],
+      recipientCount: 2,
+    },
+    {
+      id: '4',
+      name: 'Maintenance Due',
+      description: 'Remind operators when scheduled maintenance is approaching',
+      icon: Wrench,
+      isActive: false,
+      eventType: 'maintenance_due',
+      deliveryMethods: ['email'],
+      recipientCount: 8,
+    },
+    {
+      id: '5',
+      name: 'Equipment Status Changed',
+      description: 'Notify when equipment operational status changes',
+      icon: Activity,
+      isActive: true,
+      eventType: 'status_changed',
+      deliveryMethods: ['email'],
+      recipientCount: 4,
+    },
+    {
+      id: '6',
+      name: 'Inspection Completed',
+      description: 'Notify supervisors when inspections are completed',
+      icon: CheckCircle2,
+      isActive: false,
+      eventType: 'inspection_completed',
+      deliveryMethods: ['email'],
+      recipientCount: 2,
+    },
+  ]);
   
-  // Filters
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [typeFilter, setTypeFilter] = useState<string>('all');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const [configs, setConfigs] = useState<NotificationConfig[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { toast } = useToast();
 
   useEffect(() => {
-    loadStats();
-    loadExecutions();
+    loadConfigs();
   }, []);
 
-  const loadStats = async () => {
+  const loadConfigs = async () => {
+    setIsLoading(true);
     try {
       const { data, error } = await supabase
-        .from('notification_executions')
-        .select('status, executed_at, created_at')
+        .from('notification_configs')
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-
-      const executions = data || [];
-      setStats({
-        lastRun: executions.length > 0 ? executions[0].created_at : null,
-        totalExecutions: executions.length,
-        successCount: executions.filter(e => e.status === 'sent').length,
-        failureCount: executions.filter(e => e.status === 'failed').length,
-        pendingCount: executions.filter(e => e.status === 'pending').length,
-      });
-    } catch (error: any) {
-      console.error('Error loading stats:', error);
-    }
-  };
-
-  const loadExecutions = async () => {
-    setIsLoading(true);
-    try {
-      let query = supabase
-        .from('notification_executions')
-        .select('*')
-        .order('scheduled_time', { ascending: false });
-
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
-      }
-
-      if (typeFilter !== 'all') {
-        query = query.eq('notification_type', typeFilter as any);
-      }
-
-      if (dateFrom) {
-        query = query.gte('scheduled_time', dateFrom);
-      }
-
-      if (dateTo) {
-        query = query.lte('scheduled_time', dateTo);
-      }
-
-      const { data, error } = await query.limit(100);
-
-      if (error) throw error;
-
-      let filtered = (data || []) as NotificationExecution[];
-      if (searchTerm) {
-        filtered = filtered.filter(e =>
-          e.form_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          e.form_id.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      }
-
-      setExecutions(filtered);
+      setConfigs((data || []) as NotificationConfig[]);
     } catch (error: any) {
       toast({
-        title: 'Error',
+        title: 'Error loading configurations',
         description: error.message,
         variant: 'destructive',
       });
@@ -136,320 +126,217 @@ export const NotificationExecutionMonitor: React.FC = () => {
     }
   };
 
-  const handleForceSchedule = async () => {
+  const handleToggleEvent = async (eventId: string) => {
+    setEventNotifications(prev =>
+      prev.map(event =>
+        event.id === eventId ? { ...event, isActive: !event.isActive } : event
+      )
+    );
+
     toast({
-      title: 'Force Schedule',
-      description: 'This feature would trigger the scheduling process immediately. (Demo mode)',
+      title: 'Event Status Updated',
+      description: 'Notification event has been toggled successfully.',
     });
-    // In production, this would call an edge function to trigger scheduling
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'sent':
-        return <CheckCircle className="h-4 w-4 text-success" />;
-      case 'failed':
-        return <XCircle className="h-4 w-4 text-destructive" />;
-      case 'pending':
-        return <Clock className="h-4 w-4 text-warning" />;
-      default:
-        return <AlertCircle className="h-4 w-4" />;
-    }
+  const handleConfigureEvent = (event: EventNotification) => {
+    toast({
+      title: 'Configure Event',
+      description: `Opening configuration for ${event.name}`,
+    });
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'sent':
-        return 'bg-success text-success-foreground';
-      case 'failed':
-        return 'bg-destructive text-destructive-foreground';
-      case 'pending':
-        return 'bg-warning text-warning-foreground';
-      default:
-        return 'bg-muted text-muted-foreground';
-    }
+  const handleCreateGeneral = () => {
+    toast({
+      title: 'Create General Notification',
+      description: 'Opening configuration wizard for general notifications',
+    });
   };
 
-  const getTypeLabel = (type: string) => {
-    const labels = {
-      pre_inspection: 'Pre-Inspection',
-      due_reminder: 'Due Reminder',
-      missed_reminder: 'Missed Reminder',
-    };
-    return labels[type as keyof typeof labels] || type;
-  };
+  const getActiveCount = () => eventNotifications.filter(e => e.isActive).length;
+  const getTotalCount = () => eventNotifications.length;
 
   return (
     <div className="space-y-6">
-      {/* Scheduler Overview */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Scheduler Overview</h3>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <Activity className="h-6 w-6 mx-auto mb-2 text-primary" />
-                <p className="text-xs text-muted-foreground">Last Run</p>
-                <p className="text-sm font-medium">
-                  {stats.lastRun ? new Date(stats.lastRun).toLocaleString() : 'Never'}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <p className="text-2xl font-bold">{stats.totalExecutions}</p>
-                <p className="text-xs text-muted-foreground">Total Executions</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-success">{stats.successCount}</p>
-                <p className="text-xs text-muted-foreground">Successful</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-destructive">{stats.failureCount}</p>
-                <p className="text-xs text-muted-foreground">Failed</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-warning">{stats.pendingCount}</p>
-                <p className="text-xs text-muted-foreground">Pending</p>
-              </div>
-            </CardContent>
-          </Card>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <Bell className="h-6 w-6" />
+            Notification Management
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Configure event-based notifications and general alerts
+          </p>
         </div>
-
-        <div className="mt-4 flex gap-2">
-          <Button onClick={handleForceSchedule} variant="outline" size="sm">
-            <Play className="h-4 w-4 mr-2" />
-            Force Push & Schedule Now
-          </Button>
-          <Button onClick={loadExecutions} variant="outline" size="sm">
-            <RotateCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
-        </div>
+        <Button onClick={handleCreateGeneral} size="lg">
+          <Plus className="h-4 w-4 mr-2" />
+          Create General Notification
+        </Button>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Filter className="h-4 w-4" />
-            Filters
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <Label>Search</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Form name or ID..."
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label>Status</Label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="sent">Sent</SelectItem>
-                  <SelectItem value="failed">Failed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label>Type</Label>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="pre_inspection">Pre-Inspection</SelectItem>
-                  <SelectItem value="due_reminder">Due Reminder</SelectItem>
-                  <SelectItem value="missed_reminder">Missed Reminder</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label>Date Range</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="date"
-                  value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
-                  className="text-xs"
-                />
-                <Input
-                  type="date"
-                  value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
-                  className="text-xs"
-                />
-              </div>
-            </div>
-          </div>
-
-          <Button onClick={loadExecutions} size="sm">
-            Apply Filters
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Execution Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Execution History</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading executions...</p>
-          ) : executions.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">
-              No executions found
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Active Events
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{getActiveCount()}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              out of {getTotalCount()} total events
             </p>
-          ) : (
-            <div className="space-y-2">
-              {executions.map((execution) => (
-                <Card
-                  key={execution.id}
-                  className="cursor-pointer hover:bg-muted/50 transition-colors"
-                  onClick={() => {
-                    setSelectedExecution(execution);
-                    setShowDetailDrawer(true);
-                  }}
-                >
-                  <CardContent className="pt-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 flex-1">
-                        {getStatusIcon(execution.status)}
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-sm">{execution.form_name}</span>
-                            <Badge variant="outline" className="text-xs">
-                              {getTypeLabel(execution.notification_type)}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Delivery Methods
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-2">
+              <Badge variant="outline" className="flex items-center gap-1">
+                <Mail className="h-3 w-3" />
+                Email
+              </Badge>
+              <Badge variant="outline" className="flex items-center gap-1">
+                <MessageSquare className="h-3 w-3" />
+                SMS
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              General Notifications
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{configs.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              scheduled notifications configured
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Event Notifications List */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Event-Based Notifications</h3>
+        <div className="grid grid-cols-1 gap-4">
+          {eventNotifications.map((event) => {
+            const IconComponent = event.icon;
+            return (
+              <Card key={event.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-4 flex-1">
+                      <div className={`p-3 rounded-lg ${event.isActive ? 'bg-primary/10' : 'bg-muted'}`}>
+                        <IconComponent className={`h-6 w-6 ${event.isActive ? 'text-primary' : 'text-muted-foreground'}`} />
+                      </div>
+                      
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h4 className="font-semibold text-base">{event.name}</h4>
+                          {event.isActive && (
+                            <Badge variant="default" className="bg-success text-success-foreground">
+                              Active
                             </Badge>
-                            <Badge className={getStatusColor(execution.status)}>
-                              {execution.status}
+                          )}
+                          {!event.isActive && (
+                            <Badge variant="outline" className="text-muted-foreground">
+                              Inactive
                             </Badge>
-                          </div>
-                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              {new Date(execution.scheduled_time).toLocaleString()}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Users className="h-3 w-3" />
-                              {execution.recipients.join(', ')}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Mail className="h-3 w-3" />
-                              {execution.delivery_methods.join(', ')}
-                            </span>
-                          </div>
+                          )}
+                        </div>
+                        
+                        <p className="text-sm text-muted-foreground mb-3">
+                          {event.description}
+                        </p>
+                        
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Mail className="h-3 w-3" />
+                            {event.deliveryMethods.join(', ')}
+                          </span>
+                          <span>•</span>
+                          <span>
+                            {event.recipientCount} recipient{event.recipientCount !== 1 ? 's' : ''}
+                          </span>
                         </div>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
-      {/* Execution Detail Drawer */}
-      <Dialog open={showDetailDrawer} onOpenChange={setShowDetailDrawer}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Execution Details</DialogTitle>
-          </DialogHeader>
-          {selectedExecution && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-xs text-muted-foreground">Form Name</Label>
-                  <p className="font-medium">{selectedExecution.form_name}</p>
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Notification Type</Label>
-                  <p className="font-medium">{getTypeLabel(selectedExecution.notification_type)}</p>
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Status</Label>
-                  <Badge className={getStatusColor(selectedExecution.status)}>
-                    {selectedExecution.status}
-                  </Badge>
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Scheduled Time</Label>
-                  <p>{new Date(selectedExecution.scheduled_time).toLocaleString()}</p>
-                </div>
-                {selectedExecution.executed_at && (
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Executed At</Label>
-                    <p>{new Date(selectedExecution.executed_at).toLocaleString()}</p>
+                    <div className="flex items-center gap-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleConfigureEvent(event)}
+                        className="gap-2"
+                      >
+                        <Settings className="h-4 w-4" />
+                        Configure
+                      </Button>
+                      
+                      <Switch
+                        checked={event.isActive}
+                        onCheckedChange={() => handleToggleEvent(event.id)}
+                      />
+                    </div>
                   </div>
-                )}
-                <div>
-                  <Label className="text-xs text-muted-foreground">Recipients</Label>
-                  <p className="capitalize">{selectedExecution.recipients.join(', ')}</p>
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Delivery Methods</Label>
-                  <p className="capitalize">{selectedExecution.delivery_methods.join(', ')}</p>
-                </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* General Notifications Section */}
+      {configs.length > 0 && (
+        <div>
+          <h3 className="text-lg font-semibold mb-4">General Notifications</h3>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Scheduled Notifications</CardTitle>
+              <CardDescription>
+                Time-based notifications configured for forms and workplace exams
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {configs.map((config) => (
+                  <div
+                    key={config.id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div>
+                      <p className="font-medium">{config.form_name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {config.notification_type.replace(/_/g, ' ')}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {config.is_active ? (
+                        <Badge variant="default" className="bg-success text-success-foreground">
+                          Active
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline">Inactive</Badge>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
-
-              {selectedExecution.error_message && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    <strong>Error:</strong> {selectedExecution.error_message}
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {selectedExecution.metadata && (
-                <div>
-                  <Label className="text-xs text-muted-foreground">Metadata</Label>
-                  <pre className="mt-2 p-4 bg-muted rounded text-xs overflow-auto max-h-48">
-                    {JSON.stringify(selectedExecution.metadata, null, 2)}
-                  </pre>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
