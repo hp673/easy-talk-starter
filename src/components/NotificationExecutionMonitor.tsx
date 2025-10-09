@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { EventNotificationConfig } from './EventNotificationConfig';
+import { GeneralNotificationModal } from './GeneralNotificationModal';
 import { 
   Bell, Plus, Settings, FileText, Ticket, AlertTriangle, 
   Wrench, Activity, CheckCircle2, Mail, MessageSquare
@@ -98,6 +100,9 @@ export const NotificationExecutionMonitor: React.FC = () => {
   
   const [configs, setConfigs] = useState<NotificationConfig[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<EventNotification | null>(null);
+  const [showEventConfig, setShowEventConfig] = useState(false);
+  const [showGeneralModal, setShowGeneralModal] = useState(false);
 
   const { toast } = useToast();
 
@@ -140,17 +145,22 @@ export const NotificationExecutionMonitor: React.FC = () => {
   };
 
   const handleConfigureEvent = (event: EventNotification) => {
-    toast({
-      title: 'Configure Event',
-      description: `Opening configuration for ${event.name}`,
-    });
+    setSelectedEvent(event);
+    setShowEventConfig(true);
   };
 
   const handleCreateGeneral = () => {
-    toast({
-      title: 'Create General Notification',
-      description: 'Opening configuration wizard for general notifications',
-    });
+    setShowGeneralModal(true);
+  };
+
+  const handleSaveEventConfig = (config: any) => {
+    console.log('Saving event config:', config);
+    toast({ title: 'Event notification updated successfully' });
+  };
+
+  const handleSaveGeneralNotification = (config: any) => {
+    console.log('Saving general notification:', config);
+    toast({ title: 'General notification created successfully' });
   };
 
   const getActiveCount = () => eventNotifications.filter(e => e.isActive).length;
@@ -337,6 +347,26 @@ export const NotificationExecutionMonitor: React.FC = () => {
           </Card>
         </div>
       )}
+
+      {/* Event Configuration Modal */}
+      {selectedEvent && (
+        <EventNotificationConfig
+          event={selectedEvent}
+          isOpen={showEventConfig}
+          onClose={() => {
+            setShowEventConfig(false);
+            setSelectedEvent(null);
+          }}
+          onSave={handleSaveEventConfig}
+        />
+      )}
+
+      {/* General Notification Modal */}
+      <GeneralNotificationModal
+        isOpen={showGeneralModal}
+        onClose={() => setShowGeneralModal(false)}
+        onSave={handleSaveGeneralNotification}
+      />
     </div>
   );
 };
