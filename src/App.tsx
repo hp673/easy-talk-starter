@@ -7,6 +7,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { OfflineProvider } from "./contexts/OfflineContext";
 
 // Pages
+import Home from "./pages/Home";
 import LoginScreen from "./pages/LoginScreen";
 import OperatorDashboard from "./pages/OperatorDashboard";
 import EquipmentSelection from "./pages/EquipmentSelection";
@@ -32,7 +33,8 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<LoginScreen />} />
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<LoginScreen />} />
               <Route path="/operator-dashboard" element={<OperatorDashboard />} />
               <Route path="/maintenance-history" element={<OperatorHistoryView />} />
               <Route path="/workplace-exams" element={<WorkplaceExams />} />
