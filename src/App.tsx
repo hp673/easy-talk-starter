@@ -8,6 +8,8 @@ import { OfflineProvider } from "./contexts/OfflineContext";
 
 // Pages
 import Home from "./pages/Home";
+import Home2 from "./pages/Home2";
+import Home3 from "./pages/Home3";
 import LoginScreen from "./pages/LoginScreen";
 import OperatorDashboard from "./pages/OperatorDashboard";
 import EquipmentSelection from "./pages/EquipmentSelection";
@@ -34,6 +36,8 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/option2" element={<Home2 />} />
+              <Route path="/option3" element={<Home3 />} />
               <Route path="/login" element={<LoginScreen />} />
               <Route path="/operator-dashboard" element={<OperatorDashboard />} />
               <Route path="/maintenance-history" element={<OperatorHistoryView />} />
