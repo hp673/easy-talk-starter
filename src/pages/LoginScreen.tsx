@@ -8,9 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
-import { Wifi, WifiOff, User, Lock, Shield } from 'lucide-react';
+import { Wifi, WifiOff, User, Lock } from 'lucide-react';
 import { mockUsers } from '@/contexts/AuthContext';
-import miningEquipment from '@/assets/mining-equipment.jpg';
+import minetrakLogo from '@/assets/minetrak-logo-black-bg.png';
 
 const LoginScreen = () => {
   const [pin, setPin] = useState('');
@@ -98,20 +98,14 @@ const LoginScreen = () => {
       <div className="w-full max-w-md space-y-6">
         {/* Header with mining image */}
         <div className="text-center space-y-4">
-          <div className="relative">
-            <img 
-              src={miningEquipment} 
-              alt="Mining Equipment" 
-              className="w-full h-48 object-cover rounded-lg shadow-lg"
-            />
-            <div className="absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center">
-              <div className="flex items-center text-white">
-                <Shield className="h-12 w-12 mr-3" />
-                <div>
-                  <h1 className="text-3xl font-bold">MineTrak</h1>
-                  <p className="text-white/80">Equipment Inspection System</p>
-                </div>
-              </div>
+          <div className="flex justify-center">
+            <div className="bg-background rounded-lg shadow-lg p-8">
+              <img 
+                src={minetrakLogo} 
+                alt="MineTrak Logo" 
+                className="w-64 h-auto"
+              />
+              <p className="text-muted-foreground text-sm mt-4 font-inter">Equipment Inspection System</p>
             </div>
           </div>
           
@@ -128,7 +122,7 @@ const LoginScreen = () => {
         {/* Login Form */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl font-semibold">Sign In</CardTitle>
+            <CardTitle className="text-xl font-semibold font-rajdhani uppercase tracking-wide">Sign In</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-6">

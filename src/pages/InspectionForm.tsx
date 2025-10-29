@@ -17,6 +17,7 @@ import { ArrowLeft, Save, AlertTriangle, Wifi, WifiOff, Camera, FileText, Calend
 import { useOffline } from '@/contexts/OfflineContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
+import minetrakLogo from '@/assets/minetrak-logo-light-bg.png';
 
 interface InspectionFormData {
   // Basic Information
@@ -863,8 +864,13 @@ const InspectionForm = () => {
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
+            <img 
+              src={minetrakLogo} 
+              alt="MineTrak" 
+              className="h-8 w-auto"
+            />
             <div>
-              <h1 className="text-xl font-semibold">Heavy Equipment Daily Inspection</h1>
+              <h1 className="text-xl font-semibold font-rajdhani uppercase tracking-wide">Heavy Equipment Daily Inspection</h1>
               <p className="text-sm text-muted-foreground">
                 {selectedEquipment.id} - Complete Form
               </p>

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { LogIn } from "lucide-react";
-import minetrakLogo from "@/assets/minetrak-logo-icon.png";
+import minetrakLogo from "@/assets/minetrak-logo-light-bg.png";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -14,15 +14,14 @@ const Header = () => {
             <img 
               src={minetrakLogo} 
               alt="MineTrak Logo" 
-              className="h-10 w-auto"
+              className="h-12 w-auto"
             />
-            <span className="text-xl font-rajdhani font-bold text-foreground uppercase tracking-wide">MineTrak</span>
           </div>
           
           <Button 
             onClick={() => navigate('/login')}
-            variant="outline"
-            className="gap-2"
+            variant="default"
+            className="gap-2 font-rajdhani font-semibold"
           >
             <LogIn className="w-4 h-4" />
             Login
