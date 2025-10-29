@@ -71,9 +71,12 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				}
 			},
-			fontFamily: {
-				'inter': ['Inter', 'sans-serif'],
-			},
+		fontFamily: {
+			'inter': ['Inter', 'sans-serif'],
+			'rajdhani': ['Rajdhani', 'sans-serif'],
+			'montserrat': ['Montserrat Alternates', 'sans-serif'],
+			'exo': ['Exo 2', 'sans-serif'],
+		},
 			spacing: {
 				'18': '4.5rem', // 72px for extra large touch targets
 				'22': '5.5rem', // 88px for form sections

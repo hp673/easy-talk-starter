@@ -7,39 +7,39 @@ All colors MUST be HSL for proper contrast and accessibility.
 Optimized for sunlight readability and glove-friendly operation.
 */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&family=Montserrat+Alternates:wght@600;700;800&family=Exo+2:wght@600;700;800&display=swap');
 
 @layer base {
   :root {
-    /* Mining-specific color palette - High contrast for sunlight */
+    /* MineTrak Brand Colors - Gold & Charcoal */
     --background: 0 0% 98%;
-    --foreground: 0 0% 15%;
+    --foreground: 0 0% 7%;
     
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 15%;
+    --card-foreground: 0 0% 7%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 15%;
+    --popover-foreground: 0 0% 7%;
     
-    /* Primary: Mining Blue - High contrast */
-    --primary: 217 91% 33%;
-    --primary-foreground: 0 0% 98%;
+    /* Primary: MineTrak Gold */
+    --primary: 46 100% 44%;
+    --primary-foreground: 0 0% 0%;
     
-    /* Secondary: Mining Gray */
+    /* Secondary: Charcoal 40 */
     --secondary: 0 0% 40%;
     --secondary-foreground: 0 0% 98%;
     
     /* Muted: Light grays for backgrounds */
     --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
+    --muted-foreground: 0 0% 40%;
     
-    /* Accent: Mining blue lighter */
-    --accent: 217 91% 60%;
-    --accent-foreground: 0 0% 98%;
+    /* Accent: MineTrak Gold lighter */
+    --accent: 46 100% 60%;
+    --accent-foreground: 0 0% 0%;
     
-    /* Warning: Mining Yellow */
-    --warning: 43 96% 56%;
-    --warning-foreground: 0 0% 15%;
+    /* Warning: MineTrak Gold */
+    --warning: 46 100% 44%;
+    --warning-foreground: 0 0% 0%;
     
     /* Success: Mining Green */
     --success: 142 76% 36%;
@@ -51,10 +51,10 @@ Optimized for sunlight readability and glove-friendly operation.
     
     --border: 0 0% 90%;
     --input: 0 0% 100%;
-    --ring: 217 91% 33%;
+    --ring: 46 100% 44%;
     
-    /* Industrial radius for durability */
-    --radius: 0.5rem;
+    /* Industrial radius - 12px branding standard */
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -74,33 +74,33 @@ Optimized for sunlight readability and glove-friendly operation.
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 0 0% 7%;
+    --foreground: 0 0% 98%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 46 100% 44%;
+    --primary-foreground: 0 0% 0%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 0 0% 17%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 0 0% 17%;
+    --muted-foreground: 0 0% 40%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 46 100% 60%;
+    --accent-foreground: 0 0% 0%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 0 0% 17%;
+    --input: 0 0% 17%;
+    --ring: 46 100% 44%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
