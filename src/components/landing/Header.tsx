@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { LogIn } from "lucide-react";
-import minetrakLogo from "@/assets/minetrak-logo.png";
+import minetrakLogo from "@/assets/minetrak-logo-icon.png";
 
 const Header = () => {
   const navigate = useNavigate();
