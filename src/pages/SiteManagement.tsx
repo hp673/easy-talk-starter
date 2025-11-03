@@ -29,11 +29,15 @@ import {
   Trash2, 
   Grid, 
   List,
-  FileText
+  FileText,
+  X
 } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 import { toast } from '@/hooks/use-toast';
 
 interface Site {
@@ -46,7 +50,39 @@ interface Site {
   equipmentCount: number;
   createdAt: string;
   updatedAt: string;
+  assignedUsers: string[];
+  assignedEquipment: string[];
 }
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+interface Equipment {
+  id: string;
+  name: string;
+  type: string;
+}
+
+const mockUsers: User[] = [
+  { id: 'user-001', name: 'John Operator', email: 'john@mine.com', role: 'Operator' },
+  { id: 'user-002', name: 'Sarah Tech', email: 'sarah@mine.com', role: 'Technician' },
+  { id: 'user-003', name: 'Mike Manager', email: 'mike@mine.com', role: 'Site Manager' },
+  { id: 'user-004', name: 'Jane Admin', email: 'jane@mine.com', role: 'Admin' },
+  { id: 'user-005', name: 'Tom Engineer', email: 'tom@mine.com', role: 'Engineer' },
+  { id: 'user-006', name: 'Lisa Supervisor', email: 'lisa@mine.com', role: 'Supervisor' },
+];
+
+const mockEquipment: Equipment[] = [
+  { id: 'eq-001', name: 'Excavator CAT 320', type: 'Excavator' },
+  { id: 'eq-002', name: 'Dump Truck Volvo A40G', type: 'Haul Truck' },
+  { id: 'eq-003', name: 'Bulldozer CAT D8T', type: 'Bulldozer' },
+  { id: 'eq-004', name: 'Loader CAT 966M', type: 'Wheel Loader' },
+  { id: 'eq-005', name: 'Grader CAT 140M3', type: 'Motor Grader' },
+];
 
 const mockSites: Site[] = [
   {
@@ -58,7 +94,9 @@ const mockSites: Site[] = [
     memberCount: 24,
     equipmentCount: 18,
     createdAt: '2024-01-15',
-    updatedAt: '2024-03-10'
+    updatedAt: '2024-03-10',
+    assignedUsers: ['user-001', 'user-002', 'user-003'],
+    assignedEquipment: ['eq-001', 'eq-002', 'eq-003']
   },
   {
     id: 'site-002',
@@ -69,7 +107,9 @@ const mockSites: Site[] = [
     memberCount: 16,
     equipmentCount: 12,
     createdAt: '2024-02-01',
-    updatedAt: '2024-03-08'
+    updatedAt: '2024-03-08',
+    assignedUsers: ['user-004', 'user-005'],
+    assignedEquipment: ['eq-004', 'eq-005']
   },
   {
     id: 'site-003',
@@ -80,7 +120,9 @@ const mockSites: Site[] = [
     memberCount: 8,
     equipmentCount: 6,
     createdAt: '2024-03-01',
-    updatedAt: '2024-03-05'
+    updatedAt: '2024-03-05',
+    assignedUsers: ['user-006'],
+    assignedEquipment: []
   }
 ];
 
@@ -95,7 +137,9 @@ const SiteManagement = () => {
     name: '',
     location: '',
     description: '',
-    status: 'active' as 'active' | 'inactive'
+    status: 'active' as 'active' | 'inactive',
+    assignedUsers: [] as string[],
+    assignedEquipment: [] as string[]
   });
 
   const filteredSites = sites.filter(site =>
@@ -107,8 +151,8 @@ const SiteManagement = () => {
     const newSite: Site = {
       id: `site-${String(sites.length + 1).padStart(3, '0')}`,
       ...formData,
-      memberCount: 0,
-      equipmentCount: 0,
+      memberCount: formData.assignedUsers.length,
+      equipmentCount: formData.assignedEquipment.length,
       createdAt: new Date().toISOString().split('T')[0],
       updatedAt: new Date().toISOString().split('T')[0]
     };
@@ -118,7 +162,7 @@ const SiteManagement = () => {
     resetForm();
     toast({
       title: 'Site Created',
-      description: `${newSite.name} has been added successfully.`
+      description: `${newSite.name} has been added with ${formData.assignedUsers.length} members.`
     });
   };
 
@@ -127,7 +171,13 @@ const SiteManagement = () => {
     
     setSites(sites.map(site => 
       site.id === editingSite.id 
-        ? { ...site, ...formData, updatedAt: new Date().toISOString().split('T')[0] }
+        ? { 
+            ...site, 
+            ...formData, 
+            memberCount: formData.assignedUsers.length,
+            equipmentCount: formData.assignedEquipment.length,
+            updatedAt: new Date().toISOString().split('T')[0] 
+          }
         : site
     ));
     setEditingSite(null);
@@ -153,7 +203,9 @@ const SiteManagement = () => {
       name: site.name,
       location: site.location,
       description: site.description,
-      status: site.status
+      status: site.status,
+      assignedUsers: site.assignedUsers,
+      assignedEquipment: site.assignedEquipment
     });
   };
 
@@ -162,8 +214,42 @@ const SiteManagement = () => {
       name: '',
       location: '',
       description: '',
-      status: 'active'
+      status: 'active',
+      assignedUsers: [],
+      assignedEquipment: []
     });
+  };
+
+  const toggleUserAssignment = (userId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      assignedUsers: prev.assignedUsers.includes(userId)
+        ? prev.assignedUsers.filter(id => id !== userId)
+        : [...prev.assignedUsers, userId]
+    }));
+  };
+
+  const toggleEquipmentAssignment = (equipmentId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      assignedEquipment: prev.assignedEquipment.includes(equipmentId)
+        ? prev.assignedEquipment.filter(id => id !== equipmentId)
+        : [...prev.assignedEquipment, equipmentId]
+    }));
+  };
+
+  const removeUser = (userId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      assignedUsers: prev.assignedUsers.filter(id => id !== userId)
+    }));
+  };
+
+  const removeEquipment = (equipmentId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      assignedEquipment: prev.assignedEquipment.filter(id => id !== equipmentId)
+    }));
   };
 
   return (
@@ -376,7 +462,7 @@ const SiteManagement = () => {
           }
         }}
       >
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-4xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="font-rajdhani text-xl">
               {editingSite ? 'Edit Site' : 'Create New Site'}
@@ -386,73 +472,185 @@ const SiteManagement = () => {
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Site Name *</Label>
-              <Input
-                id="name"
-                placeholder="e.g., North Pit Mine"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="location">Location *</Label>
-              <Input
-                id="location"
-                placeholder="e.g., Queensland, Australia"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                placeholder="Describe the site and its operations..."
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows={3}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select 
-                value={formData.status} 
-                onValueChange={(value) => setFormData({ ...formData, status: value as 'active' | 'inactive' })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {editingSite && (
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Assigned Members</Label>
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">{editingSite.memberCount} users</span>
-                  </div>
+          <ScrollArea className="max-h-[calc(90vh-200px)] pr-4">
+            <div className="space-y-6 py-4">
+              {/* Basic Information */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-sm">Basic Information</h3>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="name">Site Name *</Label>
+                  <Input
+                    id="name"
+                    placeholder="e.g., North Pit Mine"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
                 </div>
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Assigned Equipment</Label>
-                  <div className="flex items-center gap-2">
-                    <Truck className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">{editingSite.equipmentCount} units</span>
-                  </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="location">Location *</Label>
+                  <Input
+                    id="location"
+                    placeholder="e.g., Queensland, Australia"
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    placeholder="Describe the site and its operations..."
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    rows={3}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status</Label>
+                  <Select 
+                    value={formData.status} 
+                    onValueChange={(value) => setFormData({ ...formData, status: value as 'active' | 'inactive' })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-            )}
-          </div>
+
+              <Separator />
+
+              {/* Assign Members */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-sm flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      Assign Members
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Select users who will have access to this site
+                    </p>
+                  </div>
+                  <Badge variant="secondary">
+                    {formData.assignedUsers.length} selected
+                  </Badge>
+                </div>
+
+                {/* Selected Users */}
+                {formData.assignedUsers.length > 0 && (
+                  <div className="flex flex-wrap gap-2 p-3 bg-muted/50 rounded-lg">
+                    {formData.assignedUsers.map(userId => {
+                      const user = mockUsers.find(u => u.id === userId);
+                      return user ? (
+                        <Badge key={userId} variant="secondary" className="gap-2">
+                          {user.name}
+                          <X 
+                            className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                            onClick={() => removeUser(userId)}
+                          />
+                        </Badge>
+                      ) : null;
+                    })}
+                  </div>
+                )}
+
+                {/* User Selection List */}
+                <div className="border rounded-lg">
+                  <ScrollArea className="h-[200px]">
+                    <div className="p-2 space-y-1">
+                      {mockUsers.map(user => (
+                        <div 
+                          key={user.id}
+                          className="flex items-center space-x-3 p-2 rounded hover:bg-muted cursor-pointer"
+                          onClick={() => toggleUserAssignment(user.id)}
+                        >
+                          <Checkbox 
+                            checked={formData.assignedUsers.includes(user.id)}
+                            onCheckedChange={() => toggleUserAssignment(user.id)}
+                          />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium">{user.name}</p>
+                            <p className="text-xs text-muted-foreground">{user.email} • {user.role}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Assign Equipment */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-sm flex items-center gap-2">
+                      <Truck className="h-4 w-4" />
+                      Assign Equipment
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Select equipment that will be used at this site
+                    </p>
+                  </div>
+                  <Badge variant="secondary">
+                    {formData.assignedEquipment.length} selected
+                  </Badge>
+                </div>
+
+                {/* Selected Equipment */}
+                {formData.assignedEquipment.length > 0 && (
+                  <div className="flex flex-wrap gap-2 p-3 bg-muted/50 rounded-lg">
+                    {formData.assignedEquipment.map(equipmentId => {
+                      const equipment = mockEquipment.find(e => e.id === equipmentId);
+                      return equipment ? (
+                        <Badge key={equipmentId} variant="secondary" className="gap-2">
+                          {equipment.name}
+                          <X 
+                            className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                            onClick={() => removeEquipment(equipmentId)}
+                          />
+                        </Badge>
+                      ) : null;
+                    })}
+                  </div>
+                )}
+
+                {/* Equipment Selection List */}
+                <div className="border rounded-lg">
+                  <ScrollArea className="h-[200px]">
+                    <div className="p-2 space-y-1">
+                      {mockEquipment.map(equipment => (
+                        <div 
+                          key={equipment.id}
+                          className="flex items-center space-x-3 p-2 rounded hover:bg-muted cursor-pointer"
+                          onClick={() => toggleEquipmentAssignment(equipment.id)}
+                        >
+                          <Checkbox 
+                            checked={formData.assignedEquipment.includes(equipment.id)}
+                            onCheckedChange={() => toggleEquipmentAssignment(equipment.id)}
+                          />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium">{equipment.name}</p>
+                            <p className="text-xs text-muted-foreground">{equipment.type}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
           
           <DialogFooter>
             <Button 
