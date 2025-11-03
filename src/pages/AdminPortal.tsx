@@ -16,7 +16,7 @@ import WorkplaceTemplateManager from '@/components/WorkplaceTemplateManager';
 import { NotificationExecutionMonitor } from '@/components/NotificationExecutionMonitor';
 import { 
   Settings, Users, Truck, FileText, Activity, 
-  Wifi, WifiOff, LogOut, Search, Plus, Edit, Trash2, Tag, Bell
+  Wifi, WifiOff, LogOut, Search, Plus, Edit, Trash2, Tag, Bell, MapPin
 } from 'lucide-react';
 
 interface User {
@@ -209,7 +209,7 @@ const AdminPortal = () => {
         <Card>
           <CardContent className="pt-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-7 w-full">
+              <TabsList className="grid grid-cols-8 w-full">
                 <TabsTrigger value="users" className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
                   Users
@@ -217,6 +217,10 @@ const AdminPortal = () => {
                 <TabsTrigger value="equipment" className="flex items-center gap-2">
                   <Truck className="h-4 w-4" />
                   Equipment
+                </TabsTrigger>
+                <TabsTrigger value="sites" className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4" />
+                  Sites
                 </TabsTrigger>
                 <TabsTrigger value="categories" className="flex items-center gap-2">
                   <Tag className="h-4 w-4" />
@@ -342,6 +346,29 @@ const AdminPortal = () => {
                       </CardContent>
                     </Card>
                   ))}
+                </div>
+              </TabsContent>
+
+              {/* Site Management */}
+              <TabsContent value="sites" className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold">Site Management</h3>
+                  <Button onClick={() => navigate('/site-management')}>
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Open Site Manager
+                  </Button>
+                </div>
+                
+                <div className="text-center py-12">
+                  <MapPin className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Site Management</h3>
+                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                    Manage mining sites, assign equipment and team members, and configure site-specific settings.
+                  </p>
+                  <Button onClick={() => navigate('/site-management')} size="lg" className="font-rajdhani">
+                    <MapPin className="h-5 w-5 mr-2" />
+                    Go to Site Management
+                  </Button>
                 </div>
               </TabsContent>
 

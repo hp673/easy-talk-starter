@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import SiteSwitcher from '@/components/SiteSwitcher';
 import { 
   QrCode, 
   LogOut, 
@@ -165,12 +166,15 @@ const OperatorDashboard = () => {
   return (
     <div className="min-h-screen bg-background p-4">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-mining-dark">MineTrak Dashboard</h1>
           <p className="text-muted-foreground">Welcome back, {user?.name}</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
+          {/* Site Switcher */}
+          <SiteSwitcher />
+          
           {/* Connection Status */}
           <div className="flex items-center">
             {isOnline ? (

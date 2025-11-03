@@ -19,6 +19,7 @@ import SignatureCapture from "./pages/SignatureCapture";
 import MaintenanceDashboard from "./pages/MaintenanceDashboard";
 import SiteManagerDashboard from "./pages/SiteManagerDashboard";
 import AdminPortal from "./pages/AdminPortal";
+import SiteManagement from "./pages/SiteManagement";
 import NotificationUI from "./pages/NotificationUI";
 import OperatorHistoryView from "./pages/OperatorHistoryView";
 import WorkplaceExams from "./pages/WorkplaceExams";
@@ -49,6 +50,7 @@ const App = () => (
               <Route path="/maintenance-dashboard" element={<MaintenanceDashboard />} />
               <Route path="/site-manager-dashboard" element={<SiteManagerDashboard />} />
               <Route path="/admin-portal" element={<AdminPortal />} />
+              <Route path="/site-management" element={<SiteManagement />} />
               <Route path="/notifications" element={<NotificationUI />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
