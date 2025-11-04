@@ -40,23 +40,55 @@ const OperatorDashboard = () => {
   const navigate = useNavigate();
   const [activeFormFilter, setActiveFormFilter] = useState('msha');
 
-  // Mock compliance forms data - organized by suite
+  // Compliance forms data - organized by suite based on capability matrix
   const complianceForms = [
+    // MSHA Suite - Done ✅
     { 
       id: 'MSHA001', 
       suite: 'MSHA', 
-      title: 'Underground Mine Inspection',
-      description: 'Daily underground inspection per 30 CFR 57.18002',
+      title: 'Workplace Exam',
+      description: 'Pre-shift workplace examination per 30 CFR 57.18002',
       frequency: 'daily',
       status: 'in-progress',
       dueDate: '2024-01-23',
       route: '/workplace-exams',
       icon: 'workplace',
       required: true,
-      subscriptionIncluded: true
+      subscriptionStatus: 'included',
+      implementationStatus: 'done'
     },
     { 
       id: 'MSHA002', 
+      suite: 'MSHA', 
+      title: 'Equipment Inspection',
+      description: 'Mobile equipment pre-operational inspection',
+      frequency: 'daily',
+      status: 'pending',
+      dueDate: '2024-01-23',
+      route: '/equipment-selection',
+      icon: 'checklist',
+      required: true,
+      subscriptionStatus: 'included',
+      implementationStatus: 'done'
+    },
+    
+    // MSHA Suite - Planned 🔜
+    { 
+      id: 'MSHA003', 
+      suite: 'MSHA', 
+      title: 'Fuel Log',
+      description: 'Daily fuel usage and refueling documentation',
+      frequency: 'daily',
+      status: 'pending',
+      dueDate: '2024-01-23',
+      route: '/msha-fuel',
+      icon: 'fuel',
+      required: false,
+      subscriptionStatus: 'coming-soon',
+      implementationStatus: 'planned'
+    },
+    { 
+      id: 'MSHA004', 
       suite: 'MSHA', 
       title: 'Fire Extinguisher Inspection',
       description: 'Monthly fire equipment compliance check',
@@ -66,111 +98,142 @@ const OperatorDashboard = () => {
       route: '/msha-fire',
       icon: 'fire',
       required: true,
-      subscriptionIncluded: true
+      subscriptionStatus: 'coming-soon',
+      implementationStatus: 'planned'
     },
-    { 
-      id: 'MSHA003', 
-      suite: 'MSHA', 
-      title: 'Electrical Equipment Check',
-      description: 'Weekly electrical safety inspection',
-      frequency: 'weekly',
-      status: 'submitted',
-      dueDate: '2024-01-20',
-      route: '/msha-electrical',
-      icon: 'checklist',
-      required: true,
-      subscriptionIncluded: true
-    },
+    
+    // TCEQ Suite - Planned 🔜
     { 
       id: 'TCQ001', 
       suite: 'TCEQ', 
-      title: 'SWPPP Compliance Form',
-      description: 'Stormwater Pollution Prevention Plan documentation',
+      title: 'Rainfall Log',
+      description: 'Daily rainfall monitoring and measurement',
+      frequency: 'daily',
+      status: 'pending',
+      dueDate: '2024-01-23',
+      route: '/tceq-rainfall',
+      icon: 'rain',
+      required: true,
+      subscriptionStatus: 'coming-soon',
+      implementationStatus: 'planned'
+    },
+    { 
+      id: 'TCQ002', 
+      suite: 'TCEQ', 
+      title: 'SWPPP Inspections (Site & BMP)',
+      description: 'Stormwater Pollution Prevention Plan site inspections',
       frequency: 'weekly',
       status: 'pending',
       dueDate: '2024-01-25',
       route: '/tceq-swppp',
       icon: 'droplets',
       required: true,
-      subscriptionIncluded: true
-    },
-    { 
-      id: 'TCQ002', 
-      suite: 'TCEQ', 
-      title: 'Rainfall Log',
-      description: 'Daily rainfall and discharge monitoring',
-      frequency: 'daily',
-      status: 'in-progress',
-      dueDate: '2024-01-23',
-      route: '/tceq-rainfall',
-      icon: 'rain',
-      required: true,
-      subscriptionIncluded: true
+      subscriptionStatus: 'coming-soon',
+      implementationStatus: 'planned'
     },
     { 
       id: 'TCQ003', 
       suite: 'TCEQ', 
-      title: 'Fuel Storage Inspection',
-      description: 'Weekly fuel tank and containment check',
+      title: 'Wastewater (Outfall, Effluent, DMR-ready)',
+      description: 'Wastewater discharge monitoring and reporting',
       frequency: 'weekly',
       status: 'pending',
       dueDate: '2024-01-26',
-      route: '/tceq-fuel',
-      icon: 'fuel',
-      required: false,
-      subscriptionIncluded: true
-    },
-    { 
-      id: 'CONST001', 
-      suite: 'Construction', 
-      title: 'Daily Jobsite Safety Check',
-      description: 'Construction site safety walkthrough',
-      frequency: 'daily',
-      status: 'pending',
-      dueDate: '2024-01-23',
-      route: '/construction-safety',
-      icon: 'hardhat',
+      route: '/tceq-wastewater',
+      icon: 'droplets',
       required: true,
-      subscriptionIncluded: true
+      subscriptionStatus: 'coming-soon',
+      implementationStatus: 'planned'
     },
     { 
-      id: 'CONST002', 
-      suite: 'Construction', 
-      title: 'Scaffolding Inspection',
-      description: 'Weekly scaffold and platform inspection',
+      id: 'TCQ004', 
+      suite: 'TCEQ', 
+      title: 'Weekly Site Audit',
+      description: 'Comprehensive site environmental compliance audit',
       frequency: 'weekly',
       status: 'pending',
       dueDate: '2024-01-27',
-      route: '/construction-scaffold',
+      route: '/tceq-audit',
       icon: 'checklist',
       required: true,
-      subscriptionIncluded: false
+      subscriptionStatus: 'coming-soon',
+      implementationStatus: 'planned'
     },
+    
+    // Construction Suite - Done ✅
+    { 
+      id: 'CONST001', 
+      suite: 'Construction', 
+      title: 'Equipment Inspection',
+      description: 'Construction equipment pre-operational check',
+      frequency: 'daily',
+      status: 'pending',
+      dueDate: '2024-01-23',
+      route: '/equipment-selection',
+      icon: 'hardhat',
+      required: true,
+      subscriptionStatus: 'included',
+      implementationStatus: 'done'
+    },
+    
+    // Construction Suite - Planned 🔜
+    { 
+      id: 'CONST002', 
+      suite: 'Construction', 
+      title: 'Fuel Log',
+      description: 'Equipment fuel tracking and usage log',
+      frequency: 'daily',
+      status: 'pending',
+      dueDate: '2024-01-23',
+      route: '/construction-fuel',
+      icon: 'fuel',
+      required: false,
+      subscriptionStatus: 'coming-soon',
+      implementationStatus: 'planned'
+    },
+    { 
+      id: 'CONST003', 
+      suite: 'Construction', 
+      title: 'Fire Extinguisher Inspection',
+      description: 'Jobsite fire safety equipment inspection',
+      frequency: 'monthly',
+      status: 'pending',
+      dueDate: '2024-01-28',
+      route: '/construction-fire',
+      icon: 'fire',
+      required: true,
+      subscriptionStatus: 'coming-soon',
+      implementationStatus: 'planned'
+    },
+    { 
+      id: 'CONST004', 
+      suite: 'Construction', 
+      title: 'JSA / JHA',
+      description: 'Job Safety Analysis / Job Hazard Analysis',
+      frequency: 'daily',
+      status: 'pending',
+      dueDate: '2024-01-23',
+      route: '/construction-jsa',
+      icon: 'checklist',
+      required: true,
+      subscriptionStatus: 'coming-soon',
+      implementationStatus: 'planned'
+    },
+    
+    // Safety Suite - Placeholder (All features available but not suite-specific)
     { 
       id: 'SAFE001', 
       suite: 'Safety', 
       title: 'General Safety Walkthrough',
-      description: 'Daily safety observation and hazard identification',
+      description: 'Cross-industry safety observation and hazard ID',
       frequency: 'daily',
       status: 'pending',
       dueDate: '2024-01-23',
       route: '/safety-walkthrough',
       icon: 'shield',
       required: false,
-      subscriptionIncluded: true
-    },
-    { 
-      id: 'SAFE002', 
-      suite: 'Safety', 
-      title: 'PPE Compliance Check',
-      description: 'Weekly personal protective equipment verification',
-      frequency: 'weekly',
-      status: 'pending',
-      dueDate: '2024-01-26',
-      route: '/safety-ppe',
-      icon: 'shield',
-      required: false,
-      subscriptionIncluded: false
+      subscriptionStatus: 'included',
+      implementationStatus: 'done'
     },
   ];
 
@@ -203,30 +266,35 @@ const OperatorDashboard = () => {
       case 'MSHA':
         return {
           title: 'MSHA – Mine Safety Compliance Forms',
-          description: 'Federal mining safety and health administration requirements',
+          tagline: 'Paperless mine inspections with MSHA-ready records.',
+          description: 'Digital Inspection Solutions for MSHA Compliance',
           color: 'border-orange-200 bg-orange-50'
         };
       case 'TCEQ':
         return {
           title: 'TCEQ – Environmental Compliance Forms',
-          description: 'Texas environmental quality and water discharge regulations',
+          tagline: 'Stormwater & wastewater compliance—captured, scheduled, audit-ready.',
+          description: 'Paperless Stormwater & Wastewater Compliance',
           color: 'border-cyan-200 bg-cyan-50'
         };
       case 'Construction':
         return {
           title: 'Construction – Site Safety Forms',
-          description: 'Construction site safety and OSHA compliance documentation',
+          tagline: 'Jobsite safety and quality forms—standardized, searchable, defensible.',
+          description: 'Field-Ready Forms for Safer Jobsites',
           color: 'border-yellow-200 bg-yellow-50'
         };
       case 'Safety':
         return {
           title: 'Safety Suite – General Workplace Safety',
-          description: 'General safety protocols and hazard prevention measures',
+          tagline: 'Track Smarter. Work Safer.',
+          description: 'Cross-industry safety and compliance capabilities',
           color: 'border-emerald-200 bg-emerald-50'
         };
       default:
         return {
           title: 'Compliance Forms',
+          tagline: '',
           description: '',
           color: 'border-gray-200 bg-gray-50'
         };
@@ -329,7 +397,8 @@ const OperatorDashboard = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-mining-dark">MineTrak Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back, {user?.name}</p>
+          <p className="text-sm text-muted-foreground italic">From Paper to Precision. Digitizing Daily Inspections.</p>
+          <p className="text-muted-foreground mt-1">Welcome back, {user?.name}</p>
         </div>
         <div className="flex flex-wrap items-center gap-4">
           {/* Site Switcher */}
@@ -467,6 +536,7 @@ const OperatorDashboard = () => {
           {/* Suite Info Banner */}
           <div className={`p-4 rounded-lg border-2 mb-6 ${currentSuiteInfo.color}`}>
             <h3 className="font-semibold text-lg mb-1">{currentSuiteInfo.title}</h3>
+            <p className="text-sm font-medium text-primary mb-1">{currentSuiteInfo.tagline}</p>
             <p className="text-sm text-muted-foreground">{currentSuiteInfo.description}</p>
           </div>
 
@@ -476,13 +546,23 @@ const OperatorDashboard = () => {
               <Card key={form.id} className={`${getFormCardBorderClass(form.status)} hover:shadow-lg transition-shadow`}>
                 <CardContent className="pt-6">
                   <div className="space-y-3">
-                    {/* Header with Icon and Status */}
+                    {/* Header with Icon, Status, and Implementation Badge */}
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-2">
                         <div className="p-2 bg-muted rounded-lg">
                           {getFormIcon(form.icon)}
                         </div>
                         <div className="flex flex-col gap-1">
+                          {form.implementationStatus === 'done' && (
+                            <Badge variant="outline" className="text-xs w-fit border-green-500 text-green-700 bg-green-50">
+                              ✅ Done
+                            </Badge>
+                          )}
+                          {form.implementationStatus === 'planned' && (
+                            <Badge variant="outline" className="text-xs w-fit border-blue-500 text-blue-700 bg-blue-50">
+                              🔜 Planned
+                            </Badge>
+                          )}
                           {form.required && (
                             <Badge variant="outline" className="text-xs w-fit border-red-300 text-red-700">
                               <Star className="h-3 w-3 mr-1" />
@@ -510,13 +590,13 @@ const OperatorDashboard = () => {
                     </div>
 
                     {/* Subscription Badge */}
-                    {form.subscriptionIncluded ? (
-                      <Badge variant="outline" className="text-xs border-green-300 text-green-700">
-                        ✓ Suite Included
+                    {form.subscriptionStatus === 'included' ? (
+                      <Badge variant="outline" className="text-xs border-green-300 text-green-700 bg-green-50">
+                        ✓ Suite Included in Subscription
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="text-xs border-gray-300 text-gray-600">
-                        Coming Soon
+                      <Badge variant="outline" className="text-xs border-amber-300 text-amber-700 bg-amber-50">
+                        🔜 Coming Soon
                       </Badge>
                     )}
 
@@ -525,9 +605,14 @@ const OperatorDashboard = () => {
                       className="w-full"
                       variant={form.status === 'overdue' ? 'destructive' : 'default'}
                       onClick={() => navigate(form.route)}
-                      disabled={!form.subscriptionIncluded}
+                      disabled={form.subscriptionStatus === 'coming-soon'}
                     >
-                      {form.status === 'submitted' ? (
+                      {form.subscriptionStatus === 'coming-soon' ? (
+                        <>
+                          <Clock className="h-4 w-4 mr-2" />
+                          Coming Soon
+                        </>
+                      ) : form.status === 'submitted' ? (
                         <>
                           <CheckCircle className="h-4 w-4 mr-2" />
                           View Submitted
