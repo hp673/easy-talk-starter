@@ -543,51 +543,28 @@ const OperatorDashboard = () => {
           {/* Forms Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredForms.map((form) => (
-              <Card key={form.id} className={`${getFormCardBorderClass(form.status)} hover:shadow-lg transition-shadow`}>
+              <Card key={form.id} className="hover:shadow-lg transition-shadow border">
                 <CardContent className="pt-6">
                   <div className="space-y-3">
-                    {/* Header with Icon, Status, and Implementation Badge */}
+                    {/* Header with Icon and Suite Badge */}
                     <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
                         <div className="p-2 bg-muted rounded-lg">
                           {getFormIcon(form.icon)}
                         </div>
-                        <div className="flex flex-col gap-1">
-                          {form.implementationStatus === 'done' && (
-                            <Badge variant="outline" className="text-xs w-fit border-green-500 text-green-700 bg-green-50">
-                              ✅ Done
-                            </Badge>
-                          )}
-                          {form.implementationStatus === 'planned' && (
-                            <Badge variant="outline" className="text-xs w-fit border-blue-500 text-blue-700 bg-blue-50">
-                              🔜 Planned
-                            </Badge>
-                          )}
-                          {form.required && (
-                            <Badge variant="outline" className="text-xs w-fit border-red-300 text-red-700">
-                              <Star className="h-3 w-3 mr-1" />
-                              Required
-                            </Badge>
-                          )}
+                        <div>
+                          <h3 className="font-semibold text-mining-dark">
+                            {form.title}
+                          </h3>
                         </div>
                       </div>
-                      {getStatusBadge(form.status)}
+                      {getSuiteBadge(form.suite)}
                     </div>
 
-                    {/* Form Title & Description */}
-                    <div>
-                      <h3 className="font-semibold text-mining-dark mb-1">
-                        {form.title}
-                      </h3>
-                      <p className="text-xs text-muted-foreground mb-2">
-                        {form.description}
-                      </p>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        {getFrequencyIcon(form.frequency)}
-                        <span className="capitalize">{form.frequency}</span>
-                        <span className="text-xs">• Due: {form.dueDate}</span>
-                      </div>
-                    </div>
+                    {/* Form Description */}
+                    <p className="text-sm text-muted-foreground">
+                      {form.description}
+                    </p>
 
                     {/* Subscription Badge */}
                     {form.subscriptionStatus === 'included' ? (
@@ -603,7 +580,6 @@ const OperatorDashboard = () => {
                     {/* Action Button */}
                     <Button 
                       className="w-full"
-                      variant={form.status === 'overdue' ? 'destructive' : 'default'}
                       onClick={() => navigate(form.route)}
                       disabled={form.subscriptionStatus === 'coming-soon'}
                     >
@@ -612,20 +588,10 @@ const OperatorDashboard = () => {
                           <Clock className="h-4 w-4 mr-2" />
                           Coming Soon
                         </>
-                      ) : form.status === 'submitted' ? (
-                        <>
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          View Submitted
-                        </>
-                      ) : form.status === 'in-progress' ? (
-                        <>
-                          <RefreshCw className="h-4 w-4 mr-2" />
-                          Continue
-                        </>
                       ) : (
                         <>
                           <FileText className="h-4 w-4 mr-2" />
-                          Start Form
+                          View Forms
                         </>
                       )}
                     </Button>
