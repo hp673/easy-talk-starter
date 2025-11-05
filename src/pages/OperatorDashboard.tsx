@@ -219,22 +219,6 @@ const OperatorDashboard = () => {
       subscriptionStatus: 'coming-soon',
       implementationStatus: 'planned'
     },
-    
-    // Safety Suite - Placeholder (All features available but not suite-specific)
-    { 
-      id: 'SAFE001', 
-      suite: 'Safety', 
-      title: 'General Safety Walkthrough',
-      description: 'Cross-industry safety observation and hazard ID',
-      frequency: 'daily',
-      status: 'pending',
-      dueDate: '2024-01-23',
-      route: '/safety-walkthrough',
-      icon: 'shield',
-      required: false,
-      subscriptionStatus: 'included',
-      implementationStatus: 'done'
-    },
   ];
 
   // Mock equipment data
@@ -513,7 +497,7 @@ const OperatorDashboard = () => {
         <CardContent>
           {/* Suite Tabs */}
           <Tabs value={activeFormFilter} onValueChange={setActiveFormFilter} className="mb-6">
-            <TabsList className="grid w-full grid-cols-4 h-auto">
+            <TabsList className="grid w-full grid-cols-3 h-auto">
               <TabsTrigger value="msha" className="flex flex-col items-center gap-1 py-3">
                 <HardHat className="h-5 w-5" />
                 <span>MSHA</span>
@@ -525,10 +509,6 @@ const OperatorDashboard = () => {
               <TabsTrigger value="construction" className="flex flex-col items-center gap-1 py-3">
                 <HardHat className="h-5 w-5" />
                 <span>Construction</span>
-              </TabsTrigger>
-              <TabsTrigger value="safety" className="flex flex-col items-center gap-1 py-3">
-                <Shield className="h-5 w-5" />
-                <span>Safety</span>
               </TabsTrigger>
             </TabsList>
           </Tabs>
