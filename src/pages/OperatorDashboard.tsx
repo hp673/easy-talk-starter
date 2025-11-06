@@ -5,7 +5,7 @@ import { useOffline } from '@/contexts/OfflineContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import SiteSwitcher from '@/components/SiteSwitcher';
 import { 
   QrCode, 
@@ -40,9 +40,9 @@ const OperatorDashboard = () => {
   const navigate = useNavigate();
   const [activeFormFilter, setActiveFormFilter] = useState('msha');
 
-  // Compliance forms data - organized by suite based on capability matrix
+  // Compliance forms data - MVP forms only (done/included)
   const complianceForms = [
-    // MSHA Suite - Done ✅
+    // MSHA Suite - Available
     { 
       id: 'MSHA001', 
       suite: 'MSHA', 
@@ -72,95 +72,7 @@ const OperatorDashboard = () => {
       implementationStatus: 'done'
     },
     
-    // MSHA Suite - Planned 🔜
-    { 
-      id: 'MSHA003', 
-      suite: 'MSHA', 
-      title: 'Fuel Log',
-      description: 'Daily fuel usage and refueling documentation',
-      frequency: 'daily',
-      status: 'pending',
-      dueDate: '2024-01-23',
-      route: '/msha-fuel',
-      icon: 'fuel',
-      required: false,
-      subscriptionStatus: 'coming-soon',
-      implementationStatus: 'planned'
-    },
-    { 
-      id: 'MSHA004', 
-      suite: 'MSHA', 
-      title: 'Fire Extinguisher Inspection',
-      description: 'Monthly fire equipment compliance check',
-      frequency: 'monthly',
-      status: 'pending',
-      dueDate: '2024-01-28',
-      route: '/msha-fire',
-      icon: 'fire',
-      required: true,
-      subscriptionStatus: 'coming-soon',
-      implementationStatus: 'planned'
-    },
-    
-    // TCEQ Suite - Planned 🔜
-    { 
-      id: 'TCQ001', 
-      suite: 'TCEQ', 
-      title: 'Rainfall Log',
-      description: 'Daily rainfall monitoring and measurement',
-      frequency: 'daily',
-      status: 'pending',
-      dueDate: '2024-01-23',
-      route: '/tceq-rainfall',
-      icon: 'rain',
-      required: true,
-      subscriptionStatus: 'coming-soon',
-      implementationStatus: 'planned'
-    },
-    { 
-      id: 'TCQ002', 
-      suite: 'TCEQ', 
-      title: 'SWPPP Inspections (Site & BMP)',
-      description: 'Stormwater Pollution Prevention Plan site inspections',
-      frequency: 'weekly',
-      status: 'pending',
-      dueDate: '2024-01-25',
-      route: '/tceq-swppp',
-      icon: 'droplets',
-      required: true,
-      subscriptionStatus: 'coming-soon',
-      implementationStatus: 'planned'
-    },
-    { 
-      id: 'TCQ003', 
-      suite: 'TCEQ', 
-      title: 'Wastewater (Outfall, Effluent, DMR-ready)',
-      description: 'Wastewater discharge monitoring and reporting',
-      frequency: 'weekly',
-      status: 'pending',
-      dueDate: '2024-01-26',
-      route: '/tceq-wastewater',
-      icon: 'droplets',
-      required: true,
-      subscriptionStatus: 'coming-soon',
-      implementationStatus: 'planned'
-    },
-    { 
-      id: 'TCQ004', 
-      suite: 'TCEQ', 
-      title: 'Weekly Site Audit',
-      description: 'Comprehensive site environmental compliance audit',
-      frequency: 'weekly',
-      status: 'pending',
-      dueDate: '2024-01-27',
-      route: '/tceq-audit',
-      icon: 'checklist',
-      required: true,
-      subscriptionStatus: 'coming-soon',
-      implementationStatus: 'planned'
-    },
-    
-    // Construction Suite - Done ✅
+    // Construction Suite - Available
     { 
       id: 'CONST001', 
       suite: 'Construction', 
@@ -174,50 +86,6 @@ const OperatorDashboard = () => {
       required: true,
       subscriptionStatus: 'included',
       implementationStatus: 'done'
-    },
-    
-    // Construction Suite - Planned 🔜
-    { 
-      id: 'CONST002', 
-      suite: 'Construction', 
-      title: 'Fuel Log',
-      description: 'Equipment fuel tracking and usage log',
-      frequency: 'daily',
-      status: 'pending',
-      dueDate: '2024-01-23',
-      route: '/construction-fuel',
-      icon: 'fuel',
-      required: false,
-      subscriptionStatus: 'coming-soon',
-      implementationStatus: 'planned'
-    },
-    { 
-      id: 'CONST003', 
-      suite: 'Construction', 
-      title: 'Fire Extinguisher Inspection',
-      description: 'Jobsite fire safety equipment inspection',
-      frequency: 'monthly',
-      status: 'pending',
-      dueDate: '2024-01-28',
-      route: '/construction-fire',
-      icon: 'fire',
-      required: true,
-      subscriptionStatus: 'coming-soon',
-      implementationStatus: 'planned'
-    },
-    { 
-      id: 'CONST004', 
-      suite: 'Construction', 
-      title: 'JSA / JHA',
-      description: 'Job Safety Analysis / Job Hazard Analysis',
-      frequency: 'daily',
-      status: 'pending',
-      dueDate: '2024-01-23',
-      route: '/construction-jsa',
-      icon: 'checklist',
-      required: true,
-      subscriptionStatus: 'coming-soon',
-      implementationStatus: 'planned'
     },
   ];
 
@@ -347,9 +215,13 @@ const OperatorDashboard = () => {
     }
   };
 
+  // Filter forms based on selected suite
   const filteredForms = complianceForms.filter(
     form => form.suite.toLowerCase() === activeFormFilter.toLowerCase()
   );
+
+  // Get available suites (only suites with available forms)
+  const availableSuites = Array.from(new Set(complianceForms.map(form => form.suite)));
 
   const currentSuiteInfo = getSuiteInfo(activeFormFilter.charAt(0).toUpperCase() + activeFormFilter.slice(1));
 
@@ -495,23 +367,29 @@ const OperatorDashboard = () => {
           </p>
         </CardHeader>
         <CardContent>
-          {/* Suite Tabs */}
-          <Tabs value={activeFormFilter} onValueChange={setActiveFormFilter} className="mb-6">
-            <TabsList className="grid w-full grid-cols-3 h-auto">
-              <TabsTrigger value="msha" className="flex flex-col items-center gap-1 py-3">
-                <HardHat className="h-5 w-5" />
-                <span>MSHA</span>
-              </TabsTrigger>
-              <TabsTrigger value="tceq" className="flex flex-col items-center gap-1 py-3">
-                <Droplets className="h-5 w-5" />
-                <span>TCEQ</span>
-              </TabsTrigger>
-              <TabsTrigger value="construction" className="flex flex-col items-center gap-1 py-3">
-                <HardHat className="h-5 w-5" />
-                <span>Construction</span>
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          {/* Suite Selector Dropdown */}
+          <div className="mb-6">
+            <label className="text-sm font-medium mb-2 block">Select Compliance Suite</label>
+            <Select value={activeFormFilter} onValueChange={setActiveFormFilter}>
+              <SelectTrigger className="w-full md:w-[300px] h-12 bg-background border-2">
+                <SelectValue placeholder="Choose a suite..." />
+              </SelectTrigger>
+              <SelectContent className="bg-background border-2 z-50">
+                <SelectItem value="msha" className="cursor-pointer">
+                  <div className="flex items-center gap-2">
+                    <HardHat className="h-4 w-4" />
+                    <span>MSHA - Mine Safety</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="construction" className="cursor-pointer">
+                  <div className="flex items-center gap-2">
+                    <HardHat className="h-4 w-4" />
+                    <span>Construction - Site Safety</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Suite Info Banner */}
           <div className={`p-4 rounded-lg border-2 mb-6 ${currentSuiteInfo.color}`}>
@@ -523,10 +401,10 @@ const OperatorDashboard = () => {
           {/* Forms Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredForms.map((form) => (
-              <Card key={form.id} className="hover:shadow-lg transition-shadow border">
+              <Card key={form.id} className={`hover:shadow-lg transition-shadow ${getFormCardBorderClass(form.status)}`}>
                 <CardContent className="pt-6">
                   <div className="space-y-3">
-                    {/* Header with Icon and Suite Badge */}
+                    {/* Header with Icon and Status Badge */}
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-muted rounded-lg">
@@ -538,7 +416,7 @@ const OperatorDashboard = () => {
                           </h3>
                         </div>
                       </div>
-                      {getSuiteBadge(form.suite)}
+                      {getStatusBadge(form.status)}
                     </div>
 
                     {/* Form Description */}
@@ -546,32 +424,31 @@ const OperatorDashboard = () => {
                       {form.description}
                     </p>
 
-                    {/* Subscription Badge */}
-                    {form.subscriptionStatus === 'included' ? (
-                      <Badge variant="outline" className="text-xs border-green-300 text-green-700 bg-green-50">
-                        ✓ Suite Included in Subscription
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="text-xs border-amber-300 text-amber-700 bg-amber-50">
-                        🔜 Coming Soon
-                      </Badge>
-                    )}
+                    {/* Frequency Badge */}
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      {getFrequencyIcon(form.frequency)}
+                      <span className="capitalize">{form.frequency} Inspection</span>
+                      {form.required && (
+                        <Badge variant="outline" className="ml-auto text-xs border-red-300 text-red-700">
+                          Required
+                        </Badge>
+                      )}
+                    </div>
 
                     {/* Action Button */}
                     <Button 
                       className="w-full"
                       onClick={() => navigate(form.route)}
-                      disabled={form.subscriptionStatus === 'coming-soon'}
                     >
-                      {form.subscriptionStatus === 'coming-soon' ? (
+                      {form.status === 'in-progress' ? (
                         <>
-                          <Clock className="h-4 w-4 mr-2" />
-                          Coming Soon
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          Continue Form
                         </>
                       ) : (
                         <>
                           <FileText className="h-4 w-4 mr-2" />
-                          View Forms
+                          Start Form
                         </>
                       )}
                     </Button>
@@ -582,8 +459,10 @@ const OperatorDashboard = () => {
           </div>
 
           {filteredForms.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>No forms assigned in this suite</p>
+            <div className="text-center py-12 text-muted-foreground">
+              <ClipboardCheck className="h-12 w-12 mx-auto mb-3 opacity-50" />
+              <p className="text-lg font-medium">No active forms available for this suite</p>
+              <p className="text-sm mt-1">Additional compliance forms coming soon</p>
             </div>
           )}
         </CardContent>
