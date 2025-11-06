@@ -12,7 +12,7 @@ import { useOffline } from '@/contexts/OfflineContext';
 import { AddUserForm, AddEquipmentForm, CreateTemplateForm, ResetPasswordForm } from '@/components/AdminForms';
 import CategoryManager from '@/components/CategoryManager';
 import FormTemplateManager from '@/components/FormTemplateManager';
-import WorkplaceTemplateManager from '@/components/WorkplaceTemplateManager';
+import ComplianceSuiteManager from '@/components/ComplianceSuiteManager';
 import { NotificationExecutionMonitor } from '@/components/NotificationExecutionMonitor';
 import { 
   Settings, Users, Truck, FileText, Activity, 
@@ -125,9 +125,9 @@ const AdminPortal = () => {
           <div className="flex items-center gap-4">
             <Settings className="h-8 w-8 text-primary" />
             <div>
-              <h1 className="text-xl font-semibold">Admin Portal</h1>
+              <h1 className="text-xl font-semibold">Organization Admin Portal</h1>
               <p className="text-sm text-muted-foreground">
-                System administration and management
+                Manage organization compliance suites and system settings
               </p>
             </div>
           </div>
@@ -231,8 +231,8 @@ const AdminPortal = () => {
                   Equipment Forms
                 </TabsTrigger>
                 <TabsTrigger value="workplace" className="flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
-                  Workplace Forms
+                  <FileText className="h-4 w-4" />
+                  Compliance Suites
                 </TabsTrigger>
                 <TabsTrigger value="notifications" className="flex items-center gap-2">
                   <Bell className="h-4 w-4" />
@@ -382,9 +382,9 @@ const AdminPortal = () => {
                 <FormTemplateManager />
               </TabsContent>
 
-              {/* Workplace Form Templates */}
+              {/* Compliance Suite Templates */}
               <TabsContent value="workplace" className="space-y-4">
-                <WorkplaceTemplateManager />
+                <ComplianceSuiteManager />
               </TabsContent>
 
               {/* Notifications */}
