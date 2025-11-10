@@ -23,22 +23,28 @@ import {
   Plus, 
   Search, 
   MapPin, 
-  Users, 
-  Truck, 
   Edit, 
-  Trash2, 
+  Archive, 
   Grid, 
   List,
-  FileText,
-  X
+  Upload,
+  Info
 } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from '@/components/ui/alert-dialog';
 import { toast } from '@/hooks/use-toast';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface Site {
   id: string;
@@ -46,83 +52,37 @@ interface Site {
   location: string;
   description: string;
   status: 'active' | 'inactive';
-  memberCount: number;
-  equipmentCount: number;
   createdAt: string;
   updatedAt: string;
-  assignedUsers: string[];
-  assignedEquipment: string[];
 }
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
-
-interface Equipment {
-  id: string;
-  name: string;
-  type: string;
-}
-
-const mockUsers: User[] = [
-  { id: 'user-001', name: 'John Operator', email: 'john@mine.com', role: 'Operator' },
-  { id: 'user-002', name: 'Sarah Tech', email: 'sarah@mine.com', role: 'Technician' },
-  { id: 'user-003', name: 'Mike Manager', email: 'mike@mine.com', role: 'Site Manager' },
-  { id: 'user-004', name: 'Jane Admin', email: 'jane@mine.com', role: 'Admin' },
-  { id: 'user-005', name: 'Tom Engineer', email: 'tom@mine.com', role: 'Engineer' },
-  { id: 'user-006', name: 'Lisa Supervisor', email: 'lisa@mine.com', role: 'Supervisor' },
-];
-
-const mockEquipment: Equipment[] = [
-  { id: 'eq-001', name: 'Excavator CAT 320', type: 'Excavator' },
-  { id: 'eq-002', name: 'Dump Truck Volvo A40G', type: 'Haul Truck' },
-  { id: 'eq-003', name: 'Bulldozer CAT D8T', type: 'Bulldozer' },
-  { id: 'eq-004', name: 'Loader CAT 966M', type: 'Wheel Loader' },
-  { id: 'eq-005', name: 'Grader CAT 140M3', type: 'Motor Grader' },
-];
 
 const mockSites: Site[] = [
   {
     id: 'site-001',
-    name: 'North Pit Mine',
-    location: 'Queensland, Australia',
-    description: 'Primary excavation site for coal mining operations',
+    name: 'Texas North',
+    location: '1234 Industrial Blvd, Houston, TX 77001',
+    description: 'Primary excavation and processing site for North Texas operations',
     status: 'active',
-    memberCount: 24,
-    equipmentCount: 18,
     createdAt: '2024-01-15',
     updatedAt: '2024-03-10',
-    assignedUsers: ['user-001', 'user-002', 'user-003'],
-    assignedEquipment: ['eq-001', 'eq-002', 'eq-003']
   },
   {
     id: 'site-002',
-    name: 'South Processing Plant',
-    location: 'Western Australia',
-    description: 'Ore processing and refining facility',
+    name: 'Austin East',
+    location: '5678 Mining Road, Austin, TX 78701',
+    description: 'East Austin construction and materials processing facility',
     status: 'active',
-    memberCount: 16,
-    equipmentCount: 12,
     createdAt: '2024-02-01',
     updatedAt: '2024-03-08',
-    assignedUsers: ['user-004', 'user-005'],
-    assignedEquipment: ['eq-004', 'eq-005']
   },
   {
     id: 'site-003',
-    name: 'East Ridge Exploration',
-    location: 'Northern Territory',
-    description: 'New exploration and survey site',
+    name: 'Newcastle',
+    location: '9012 Quarry Lane, Newcastle, WY 82701',
+    description: 'Wyoming coal mining and exploration site',
     status: 'inactive',
-    memberCount: 8,
-    equipmentCount: 6,
     createdAt: '2024-03-01',
     updatedAt: '2024-03-05',
-    assignedUsers: ['user-006'],
-    assignedEquipment: []
   }
 ];
 
@@ -132,14 +92,13 @@ const SiteManagement = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingSite, setEditingSite] = useState<Site | null>(null);
+  const [siteToArchive, setSiteToArchive] = useState<Site | null>(null);
   
   const [formData, setFormData] = useState({
     name: '',
     location: '',
     description: '',
     status: 'active' as 'active' | 'inactive',
-    assignedUsers: [] as string[],
-    assignedEquipment: [] as string[]
   });
 
   const filteredSites = sites.filter(site =>
@@ -151,8 +110,6 @@ const SiteManagement = () => {
     const newSite: Site = {
       id: `site-${String(sites.length + 1).padStart(3, '0')}`,
       ...formData,
-      memberCount: formData.assignedUsers.length,
-      equipmentCount: formData.assignedEquipment.length,
       createdAt: new Date().toISOString().split('T')[0],
       updatedAt: new Date().toISOString().split('T')[0]
     };
@@ -162,7 +119,7 @@ const SiteManagement = () => {
     resetForm();
     toast({
       title: 'Site Created',
-      description: `${newSite.name} has been added with ${formData.assignedUsers.length} members.`
+      description: `${newSite.name} has been successfully added.`
     });
   };
 
@@ -174,8 +131,6 @@ const SiteManagement = () => {
         ? { 
             ...site, 
             ...formData, 
-            memberCount: formData.assignedUsers.length,
-            equipmentCount: formData.assignedEquipment.length,
             updatedAt: new Date().toISOString().split('T')[0] 
           }
         : site
@@ -188,12 +143,18 @@ const SiteManagement = () => {
     });
   };
 
-  const handleDeleteSite = (siteId: string) => {
-    setSites(sites.filter(site => site.id !== siteId));
+  const handleArchiveSite = () => {
+    if (!siteToArchive) return;
+    
+    setSites(sites.map(site => 
+      site.id === siteToArchive.id 
+        ? { ...site, status: 'inactive' as const, updatedAt: new Date().toISOString().split('T')[0] }
+        : site
+    ));
+    setSiteToArchive(null);
     toast({
-      title: 'Site Deleted',
-      description: 'Site has been removed from the system.',
-      variant: 'destructive'
+      title: 'Site Archived',
+      description: 'Site has been archived and can be reactivated later.'
     });
   };
 
@@ -204,8 +165,6 @@ const SiteManagement = () => {
       location: site.location,
       description: site.description,
       status: site.status,
-      assignedUsers: site.assignedUsers,
-      assignedEquipment: site.assignedEquipment
     });
   };
 
@@ -215,41 +174,7 @@ const SiteManagement = () => {
       location: '',
       description: '',
       status: 'active',
-      assignedUsers: [],
-      assignedEquipment: []
     });
-  };
-
-  const toggleUserAssignment = (userId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      assignedUsers: prev.assignedUsers.includes(userId)
-        ? prev.assignedUsers.filter(id => id !== userId)
-        : [...prev.assignedUsers, userId]
-    }));
-  };
-
-  const toggleEquipmentAssignment = (equipmentId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      assignedEquipment: prev.assignedEquipment.includes(equipmentId)
-        ? prev.assignedEquipment.filter(id => id !== equipmentId)
-        : [...prev.assignedEquipment, equipmentId]
-    }));
-  };
-
-  const removeUser = (userId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      assignedUsers: prev.assignedUsers.filter(id => id !== userId)
-    }));
-  };
-
-  const removeEquipment = (equipmentId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      assignedEquipment: prev.assignedEquipment.filter(id => id !== equipmentId)
-    }));
   };
 
   return (
@@ -259,8 +184,18 @@ const SiteManagement = () => {
         <h1 className="text-3xl font-rajdhani font-bold uppercase tracking-wide mb-2">
           Site Management
         </h1>
-        <p className="text-muted-foreground">
-          Manage mining sites, assign equipment and team members
+        <p className="text-muted-foreground flex items-center gap-2">
+          Sites represent distinct work areas or addresses within your organization
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs">Equipment is used within a site. Each site has its own set of forms and inspections.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </p>
       </div>
 
@@ -296,12 +231,12 @@ const SiteManagement = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Equipment</p>
+                <p className="text-sm text-muted-foreground">Inactive Sites</p>
                 <p className="text-2xl font-bold font-rajdhani">
-                  {sites.reduce((sum, site) => sum + site.equipmentCount, 0)}
+                  {sites.filter(s => s.status === 'inactive').length}
                 </p>
               </div>
-              <Truck className="h-8 w-8 text-primary/60" />
+              <Archive className="h-8 w-8 text-primary/60" />
             </div>
           </CardContent>
         </Card>
@@ -366,17 +301,6 @@ const SiteManagement = () => {
                   {site.description}
                 </p>
                 
-                <div className="flex gap-4 text-sm">
-                  <div className="flex items-center gap-1">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    <span>{site.memberCount} members</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Truck className="h-4 w-4 text-muted-foreground" />
-                    <span>{site.equipmentCount} equipment</span>
-                  </div>
-                </div>
-                
                 <div className="flex gap-2 pt-2">
                   <Button 
                     variant="outline" 
@@ -390,9 +314,9 @@ const SiteManagement = () => {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => handleDeleteSite(site.id)}
+                    onClick={() => setSiteToArchive(site)}
                   >
-                    <Trash2 className="h-3 w-3" />
+                    <Archive className="h-3 w-3" />
                   </Button>
                 </div>
               </CardContent>
@@ -406,9 +330,8 @@ const SiteManagement = () => {
               <TableRow>
                 <TableHead className="font-rajdhani">Site Name</TableHead>
                 <TableHead className="font-rajdhani">Location</TableHead>
+                <TableHead className="font-rajdhani">Description</TableHead>
                 <TableHead className="font-rajdhani">Status</TableHead>
-                <TableHead className="font-rajdhani">Members</TableHead>
-                <TableHead className="font-rajdhani">Equipment</TableHead>
                 <TableHead className="font-rajdhani">Updated</TableHead>
                 <TableHead className="font-rajdhani">Actions</TableHead>
               </TableRow>
@@ -417,14 +340,13 @@ const SiteManagement = () => {
               {filteredSites.map(site => (
                 <TableRow key={site.id}>
                   <TableCell className="font-medium">{site.name}</TableCell>
-                  <TableCell>{site.location}</TableCell>
+                  <TableCell className="max-w-xs truncate">{site.location}</TableCell>
+                  <TableCell className="max-w-md truncate">{site.description}</TableCell>
                   <TableCell>
                     <Badge variant={site.status === 'active' ? 'default' : 'secondary'}>
                       {site.status}
                     </Badge>
                   </TableCell>
-                  <TableCell>{site.memberCount}</TableCell>
-                  <TableCell>{site.equipmentCount}</TableCell>
                   <TableCell>{site.updatedAt}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">
@@ -438,9 +360,9 @@ const SiteManagement = () => {
                       <Button 
                         variant="ghost" 
                         size="sm"
-                        onClick={() => handleDeleteSite(site.id)}
+                        onClick={() => setSiteToArchive(site)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Archive className="h-4 w-4" />
                       </Button>
                     </div>
                   </TableCell>
@@ -468,189 +390,79 @@ const SiteManagement = () => {
               {editingSite ? 'Edit Site' : 'Create New Site'}
             </DialogTitle>
             <DialogDescription>
-              {editingSite ? 'Update site information and settings' : 'Add a new mining site to your organization'}
+              {editingSite ? 'Update site information and settings' : 'Add a new work area or address to your organization'}
             </DialogDescription>
           </DialogHeader>
           
-          <ScrollArea className="max-h-[calc(90vh-200px)] pr-4">
-            <div className="space-y-6 py-4">
-              {/* Basic Information */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-sm">Basic Information</h3>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="name">Site Name *</Label>
-                  <Input
-                    id="name"
-                    placeholder="e.g., North Pit Mine"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="location">Location *</Label>
-                  <Input
-                    id="location"
-                    placeholder="e.g., Queensland, Australia"
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Describe the site and its operations..."
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={3}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
-                  <Select 
-                    value={formData.status} 
-                    onValueChange={(value) => setFormData({ ...formData, status: value as 'active' | 'inactive' })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+          <div className="space-y-6 py-4">
+            {/* Basic Information */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-sm">Site Information</h3>
+              
+              <div className="space-y-2">
+                <Label htmlFor="name">Site Name *</Label>
+                <Input
+                  id="name"
+                  placeholder="e.g., Texas North, Austin East, Newcastle"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                />
               </div>
-
-              <Separator />
-
-              {/* Assign Members */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold text-sm flex items-center gap-2">
-                      <Users className="h-4 w-4" />
-                      Assign Members
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Select users who will have access to this site
-                    </p>
-                  </div>
-                  <Badge variant="secondary">
-                    {formData.assignedUsers.length} selected
-                  </Badge>
-                </div>
-
-                {/* Selected Users */}
-                {formData.assignedUsers.length > 0 && (
-                  <div className="flex flex-wrap gap-2 p-3 bg-muted/50 rounded-lg">
-                    {formData.assignedUsers.map(userId => {
-                      const user = mockUsers.find(u => u.id === userId);
-                      return user ? (
-                        <Badge key={userId} variant="secondary" className="gap-2">
-                          {user.name}
-                          <X 
-                            className="h-3 w-3 cursor-pointer hover:text-destructive" 
-                            onClick={() => removeUser(userId)}
-                          />
-                        </Badge>
-                      ) : null;
-                    })}
-                  </div>
-                )}
-
-                {/* User Selection List */}
-                <div className="border rounded-lg">
-                  <ScrollArea className="h-[200px]">
-                    <div className="p-2 space-y-1">
-                      {mockUsers.map(user => (
-                        <div 
-                          key={user.id}
-                          className="flex items-center space-x-3 p-2 rounded hover:bg-muted cursor-pointer"
-                          onClick={() => toggleUserAssignment(user.id)}
-                        >
-                          <Checkbox 
-                            checked={formData.assignedUsers.includes(user.id)}
-                            onCheckedChange={() => toggleUserAssignment(user.id)}
-                          />
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">{user.name}</p>
-                            <p className="text-xs text-muted-foreground">{user.email} • {user.role}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="location">Location</Label>
+                <Input
+                  id="location"
+                  placeholder="Address or coordinates (optional)"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                />
               </div>
-
-              <Separator />
-
-              {/* Assign Equipment */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold text-sm flex items-center gap-2">
-                      <Truck className="h-4 w-4" />
-                      Assign Equipment
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Select equipment that will be used at this site
-                    </p>
-                  </div>
-                  <Badge variant="secondary">
-                    {formData.assignedEquipment.length} selected
-                  </Badge>
-                </div>
-
-                {/* Selected Equipment */}
-                {formData.assignedEquipment.length > 0 && (
-                  <div className="flex flex-wrap gap-2 p-3 bg-muted/50 rounded-lg">
-                    {formData.assignedEquipment.map(equipmentId => {
-                      const equipment = mockEquipment.find(e => e.id === equipmentId);
-                      return equipment ? (
-                        <Badge key={equipmentId} variant="secondary" className="gap-2">
-                          {equipment.name}
-                          <X 
-                            className="h-3 w-3 cursor-pointer hover:text-destructive" 
-                            onClick={() => removeEquipment(equipmentId)}
-                          />
-                        </Badge>
-                      ) : null;
-                    })}
-                  </div>
-                )}
-
-                {/* Equipment Selection List */}
-                <div className="border rounded-lg">
-                  <ScrollArea className="h-[200px]">
-                    <div className="p-2 space-y-1">
-                      {mockEquipment.map(equipment => (
-                        <div 
-                          key={equipment.id}
-                          className="flex items-center space-x-3 p-2 rounded hover:bg-muted cursor-pointer"
-                          onClick={() => toggleEquipmentAssignment(equipment.id)}
-                        >
-                          <Checkbox 
-                            checked={formData.assignedEquipment.includes(equipment.id)}
-                            onCheckedChange={() => toggleEquipmentAssignment(equipment.id)}
-                          />
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">{equipment.name}</p>
-                            <p className="text-xs text-muted-foreground">{equipment.type}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Describe the site and its operations (optional)"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={3}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="status">Status *</Label>
+                <Select 
+                  value={formData.status} 
+                  onValueChange={(value) => setFormData({ ...formData, status: value as 'active' | 'inactive' })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background">
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-          </ScrollArea>
+
+            {/* KML Upload Placeholder */}
+            <div className="space-y-4 p-4 border-2 border-dashed rounded-lg bg-muted/20">
+              <div className="flex items-center gap-2">
+                <Upload className="h-5 w-5 text-muted-foreground" />
+                <h3 className="font-semibold text-sm">Geospatial Boundaries</h3>
+                <Badge variant="outline" className="ml-auto">Coming Soon</Badge>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Upload KML files to define site boundaries and geofenced areas. (Not available in MVP)
+              </p>
+              <Button variant="outline" disabled className="w-full">
+                <Upload className="h-4 w-4 mr-2" />
+                Upload KML File
+              </Button>
+            </div>
+          </div>
           
           <DialogFooter>
             <Button 
@@ -665,7 +477,7 @@ const SiteManagement = () => {
             </Button>
             <Button 
               onClick={editingSite ? handleUpdateSite : handleCreateSite}
-              disabled={!formData.name || !formData.location}
+              disabled={!formData.name}
               className="font-rajdhani"
             >
               {editingSite ? 'Update Site' : 'Create Site'}
@@ -673,6 +485,25 @@ const SiteManagement = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Archive Confirmation Dialog */}
+      <AlertDialog open={!!siteToArchive} onOpenChange={() => setSiteToArchive(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-rajdhani">Archive Site?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will archive <strong>{siteToArchive?.name}</strong> and mark it as inactive. 
+              Archived sites can be reactivated later but cannot be deleted if equipment or schedules exist.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleArchiveSite} className="font-rajdhani">
+              Archive Site
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
