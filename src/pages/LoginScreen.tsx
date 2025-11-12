@@ -8,13 +8,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
-import { Wifi, WifiOff, User, Lock } from 'lucide-react';
+import { Wifi, WifiOff, User, Lock, Building2, MapPin } from 'lucide-react';
 import { mockUsers } from '@/contexts/AuthContext';
-import minetrakLogo from '@/assets/minetrak-logo-black-bg.png';
+import miningEquipment from '@/assets/mining-equipment.jpg';
 
 const LoginScreen = () => {
   const [pin, setPin] = useState('');
   const [userId, setUserId] = useState('');
+  const [accountId, setAccountId] = useState('');
+  const [rememberAccount, setRememberAccount] = useState(false);
   const [showAdminReset, setShowAdminReset] = useState(false);
   const [loading, setLoading] = useState(false);
   
@@ -94,30 +96,33 @@ const LoginScreen = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
-        {/* Header with mining image */}
-        <div className="text-center space-y-4">
-          <div className="flex justify-center">
-            <div className="bg-background rounded-lg shadow-lg p-8">
-              <img 
-                src={minetrakLogo} 
-                alt="MineTrak Logo" 
-                className="w-64 h-auto"
-              />
-              <p className="text-muted-foreground text-sm mt-4 font-inter">Equipment Inspection System</p>
+        {/* Header with mining equipment background */}
+        <div className="relative rounded-xl overflow-hidden shadow-2xl">
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
+          <img 
+            src={miningEquipment} 
+            alt="Mining Equipment" 
+            className="w-full h-40 object-cover"
+          />
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
+            <div className="flex items-center gap-3 mb-2">
+              <MapPin className="h-8 w-8" />
+              <h1 className="text-3xl font-bold font-rajdhani uppercase tracking-wider">MineTrak</h1>
             </div>
-          </div>
-          
-          <div className="flex justify-center">
-            {!isOnline && (
-              <div className="status-offline">
-                <WifiOff className="h-4 w-4" />
-                Offline
-              </div>
-            )}
+            <p className="text-sm font-inter tracking-wide">Equipment Inspection System</p>
           </div>
         </div>
+        
+        {!isOnline && (
+          <div className="flex justify-center">
+            <div className="status-offline">
+              <WifiOff className="h-4 w-4" />
+              Offline
+            </div>
+          </div>
+        )}
 
         {/* Login Form */}
         <Card>
@@ -126,6 +131,34 @@ const LoginScreen = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="account-id">Account ID or alias</Label>
+                <div className="relative">
+                  <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="account-id"
+                    type="text"
+                    value={accountId}
+                    onChange={(e) => setAccountId(e.target.value)}
+                    className="input-mining pl-10"
+                    placeholder="Enter organization name"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="remember-account"
+                  checked={rememberAccount}
+                  onChange={(e) => setRememberAccount(e.target.checked)}
+                  className="h-4 w-4 rounded border-border bg-background text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                />
+                <Label htmlFor="remember-account" className="text-sm font-normal cursor-pointer">
+                  Remember This Account
+                </Label>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="user-id">User ID</Label>
                 <div className="relative">
@@ -142,7 +175,7 @@ const LoginScreen = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="pin">PIN (4-6 digits)</Label>
+                <Label htmlFor="pin">PIN (6 digits)</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -151,7 +184,7 @@ const LoginScreen = () => {
                     value={pin}
                     onChange={(e) => setPin(e.target.value)}
                     className="input-mining pl-10"
-                    placeholder="Enter PIN"
+                    placeholder="••••••"
                     maxLength={6}
                     pattern="[0-9]*"
                     inputMode="numeric"
