@@ -12,21 +12,11 @@ import {
   DialogTitle 
 } from '@/components/ui/dialog';
 import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
-import { 
   Plus, 
   Search, 
   MapPin, 
   Edit, 
-  Archive, 
-  Grid, 
-  List,
+  Archive,
   Upload,
   Info
 } from 'lucide-react';
@@ -89,7 +79,6 @@ const mockSites: Site[] = [
 const SiteManagement = () => {
   const [sites, setSites] = useState<Site[]>(mockSites);
   const [searchTerm, setSearchTerm] = useState('');
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingSite, setEditingSite] = useState<Site | null>(null);
   const [siteToArchive, setSiteToArchive] = useState<Site | null>(null);
@@ -254,23 +243,6 @@ const SiteManagement = () => {
           />
         </div>
         
-        <div className="flex gap-2">
-          <Button
-            variant={viewMode === 'grid' ? 'default' : 'outline'}
-            size="icon"
-            onClick={() => setViewMode('grid')}
-          >
-            <Grid className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={viewMode === 'table' ? 'default' : 'outline'}
-            size="icon"
-            onClick={() => setViewMode('table')}
-          >
-            <List className="h-4 w-4" />
-          </Button>
-        </div>
-        
         <Button onClick={() => setIsCreateDialogOpen(true)} className="font-rajdhani">
           <Plus className="h-4 w-4 mr-2" />
           Create Site
@@ -278,100 +250,50 @@ const SiteManagement = () => {
       </div>
 
       {/* Sites Display */}
-      {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredSites.map(site => (
-            <Card key={site.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="font-rajdhani text-lg">{site.name}</CardTitle>
-                    <CardDescription className="flex items-center gap-1 mt-1">
-                      <MapPin className="h-3 w-3" />
-                      {site.location}
-                    </CardDescription>
-                  </div>
-                  <Badge variant={site.status === 'active' ? 'default' : 'secondary'}>
-                    {site.status}
-                  </Badge>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredSites.map(site => (
+          <Card key={site.id} className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle className="font-rajdhani text-lg">{site.name}</CardTitle>
+                  <CardDescription className="flex items-center gap-1 mt-1">
+                    <MapPin className="h-3 w-3" />
+                    {site.location}
+                  </CardDescription>
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {site.description}
-                </p>
-                
-                <div className="flex gap-2 pt-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="flex-1"
-                    onClick={() => openEditDialog(site)}
-                  >
-                    <Edit className="h-3 w-3 mr-1" />
-                    Edit
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setSiteToArchive(site)}
-                  >
-                    <Archive className="h-3 w-3" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="font-rajdhani">Site Name</TableHead>
-                <TableHead className="font-rajdhani">Location</TableHead>
-                <TableHead className="font-rajdhani">Description</TableHead>
-                <TableHead className="font-rajdhani">Status</TableHead>
-                <TableHead className="font-rajdhani">Updated</TableHead>
-                <TableHead className="font-rajdhani">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredSites.map(site => (
-                <TableRow key={site.id}>
-                  <TableCell className="font-medium">{site.name}</TableCell>
-                  <TableCell className="max-w-xs truncate">{site.location}</TableCell>
-                  <TableCell className="max-w-md truncate">{site.description}</TableCell>
-                  <TableCell>
-                    <Badge variant={site.status === 'active' ? 'default' : 'secondary'}>
-                      {site.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{site.updatedAt}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => openEditDialog(site)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => setSiteToArchive(site)}
-                      >
-                        <Archive className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Card>
-      )}
+                <Badge variant={site.status === 'active' ? 'default' : 'secondary'}>
+                  {site.status}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground line-clamp-2">
+                {site.description}
+              </p>
+              
+              <div className="flex gap-2 pt-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={() => openEditDialog(site)}
+                >
+                  <Edit className="h-3 w-3 mr-1" />
+                  Edit
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setSiteToArchive(site)}
+                >
+                  <Archive className="h-3 w-3" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
       {/* Create/Edit Dialog */}
       <Dialog 
