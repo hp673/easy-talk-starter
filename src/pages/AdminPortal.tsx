@@ -16,8 +16,9 @@ import ComplianceSuiteManager from '@/components/ComplianceSuiteManager';
 import { NotificationExecutionMonitor } from '@/components/NotificationExecutionMonitor';
 import { 
   Settings, Users, Truck, FileText, Activity, 
-  Wifi, WifiOff, LogOut, Search, Plus, Edit, Trash2, Tag, Bell, MapPin
+  Wifi, WifiOff, LogOut, Search, Plus, Edit, Trash2, Tag, Bell, MapPin, ClipboardCheck
 } from 'lucide-react';
+import InspectionRecords from '@/components/InspectionRecords';
 
 interface User {
   id: string;
@@ -203,13 +204,28 @@ const AdminPortal = () => {
               </div>
             </CardContent>
           </Card>
+
+          <Card 
+            className="cursor-pointer hover:bg-accent/50 transition-colors"
+            onClick={() => setActiveTab('inspections')}
+          >
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <ClipboardCheck className="h-5 w-5 text-primary" />
+                </div>
+                <p className="text-2xl font-bold text-primary">12</p>
+                <p className="text-sm text-muted-foreground">Inspections (7 Days)</p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Main Admin Interface */}
         <Card>
           <CardContent className="pt-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-8 w-full">
+              <TabsList className="grid grid-cols-9 w-full">
                 <TabsTrigger value="users" className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
                   Users
@@ -233,6 +249,10 @@ const AdminPortal = () => {
                 <TabsTrigger value="workplace" className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
                   Compliance Suites
+                </TabsTrigger>
+                <TabsTrigger value="inspections" className="flex items-center gap-2">
+                  <ClipboardCheck className="h-4 w-4" />
+                  Inspection Records
                 </TabsTrigger>
                 <TabsTrigger value="notifications" className="flex items-center gap-2">
                   <Bell className="h-4 w-4" />
@@ -385,6 +405,11 @@ const AdminPortal = () => {
               {/* Compliance Suite Templates */}
               <TabsContent value="workplace" className="space-y-4">
                 <ComplianceSuiteManager />
+              </TabsContent>
+
+              {/* Inspection Records */}
+              <TabsContent value="inspections" className="space-y-4">
+                <InspectionRecords />
               </TabsContent>
 
               {/* Notifications */}
