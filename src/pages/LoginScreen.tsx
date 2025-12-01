@@ -55,20 +55,8 @@ const LoginScreen = () => {
           description: `Welcome back, ${user?.name}!`,
         });
         
-        // Navigate based on user role
-        switch (user?.role) {
-          case 'operator':
-            navigate('/operator-dashboard');
-            break;
-          case 'maintainer':
-            navigate('/maintenance-dashboard');
-            break;
-          case 'admin':
-            navigate('/admin-portal');
-            break;
-          default:
-            navigate('/operator-dashboard');
-        }
+        // Navigate to role-based dashboard
+        navigate('/operator-dashboard');
       } else {
         toast({
           title: "Login Failed",

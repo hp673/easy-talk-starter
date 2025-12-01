@@ -461,4 +461,5 @@ const MaintenanceDashboard = () => {
   );
 };
 
+export { MaintenanceDashboard };
 export default MaintenanceDashboard;
