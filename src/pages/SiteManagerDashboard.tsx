@@ -86,6 +86,7 @@ const SiteManagerDashboard = () => {
   const [locationFilter, setLocationFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const [activeTab, setActiveTab] = useState<string>('overview');
   
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -207,6 +208,30 @@ const SiteManagerDashboard = () => {
       </div>
 
       <div className="max-w-7xl mx-auto p-6 space-y-6">
+        {/* Navigation Tabs */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex gap-2 overflow-x-auto">
+              {['overview', 'equipment', 'users', 'forms', 'audit'].map((tab) => (
+                <Button
+                  key={tab}
+                  variant={activeTab === tab ? 'default' : 'outline'}
+                  onClick={() => setActiveTab(tab)}
+                  className="capitalize"
+                >
+                  {tab === 'overview' && 'Dashboard'}
+                  {tab === 'equipment' && 'Equipment Management'}
+                  {tab === 'users' && 'User Management'}
+                  {tab === 'forms' && 'Form Templates'}
+                  {tab === 'audit' && 'Audit Log'}
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {activeTab === 'overview' && (
+          <>
         {/* Key Performance Indicators */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
@@ -451,6 +476,84 @@ const SiteManagerDashboard = () => {
             </Card>
           </div>
         </div>
+          </>
+        )}
+
+        {activeTab === 'users' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>User & Role Management</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground mb-4">Manage site users, assign roles, and configure inspector flags.</p>
+              <Button onClick={() => navigate('/admin-portal')}>
+                <Users className="w-4 h-4 mr-2" />
+                Open Full User Management
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {activeTab === 'equipment' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Equipment Management</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground">Manage equipment inventory, QR codes, and assignments.</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Button variant="outline" className="h-auto p-4 justify-start">
+                  <div className="text-left">
+                    <div className="font-semibold">Add New Equipment</div>
+                    <div className="text-xs text-muted-foreground">Register new equipment to the site</div>
+                  </div>
+                </Button>
+                <Button variant="outline" className="h-auto p-4 justify-start">
+                  <div className="text-left">
+                    <div className="font-semibold">Generate QR Codes</div>
+                    <div className="text-xs text-muted-foreground">Create printable QR codes for equipment</div>
+                  </div>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {activeTab === 'forms' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Site-Level Form Templates</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground mb-4">Customize inspection forms and compliance suites for this site.</p>
+              <Button variant="outline">
+                Manage Form Templates
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {activeTab === 'audit' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Audit Log</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {[
+                  { user: 'Admin User', action: 'Assigned Maintenance role to Sarah', time: '2 hours ago' },
+                  { user: 'Site Admin', action: 'Updated equipment CAT-789C-001 status', time: '4 hours ago' },
+                  { user: 'Admin User', action: 'Added new equipment KOM-PC5500-005', time: '1 day ago' },
+                ].map((log, i) => (
+                  <div key={i} className="border-l-2 border-primary pl-4 py-2">
+                    <div className="font-medium">{log.action}</div>
+                    <div className="text-xs text-muted-foreground">by {log.user} • {log.time}</div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
