@@ -57,6 +57,9 @@ export default function QRScanDemo() {
         onOpenChange={setSheetOpen}
         equipmentId="CAT-789C-001"
         equipmentName="Haul Truck CAT 789C"
+        category="Haul Truck"
+        siteName="North Mining Site"
+        status="Active"
       />
     </div>
   );
