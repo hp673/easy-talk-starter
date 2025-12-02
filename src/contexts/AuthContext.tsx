@@ -128,7 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (savedSite) {
         setCurrentSite(savedSite);
-      } else if (parsedUser.siteRoles.length > 0) {
+      } else if (parsedUser.siteRoles?.length > 0) {
         setCurrentSite(parsedUser.siteRoles[0].siteId);
       }
       
