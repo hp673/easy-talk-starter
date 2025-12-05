@@ -4,20 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOffline } from '@/contexts/OfflineContext';
 import { NotificationDrawer } from '@/components/NotificationDrawer';
 import { DefectDetailView } from '@/components/DefectDetailView';
 import { RepairDocumentation } from '@/components/RepairDocumentation';
 import { MaintenanceHistory } from '@/components/MaintenanceHistory';
-import { MaintainerSidebar } from '@/components/MaintainerSidebar';
 import { useToast } from '@/hooks/use-toast';
-import SiteSwitcher from '@/components/SiteSwitcher';
 import { 
-  Wrench, AlertTriangle, Clock, CheckCircle, 
-  Wifi, WifiOff, Filter, Eye, FileText, QrCode, ClipboardCheck, HardHat,
-  RefreshCw, Calendar, AlertCircle, Droplets, CloudRain,
-  Fuel, Shield, FireExtinguisher, TrendingUp, Package, MessageSquare
+  Wrench, AlertTriangle, Clock, CheckCircle, TrendingUp, 
+  Users, Wifi, WifiOff, LogOut, Filter, Bell, History,
+  Settings, Eye, FileText, QrCode
 } from 'lucide-react';
 import { QRScanActionSheet } from '@/components/QRScanActionSheet';
 
@@ -85,91 +83,59 @@ const mockTickets: Ticket[] = [
   },
 ];
 
-const complianceForms = [
-  { 
-    id: 'MSHA001', 
-    suite: 'MSHA', 
-    title: 'Workplace Exam',
-    description: 'Pre-shift workplace examination per 30 CFR 57.18002',
-    frequency: 'daily',
-    status: 'pending',
-    route: '/workplace-exams',
-    icon: 'workplace',
-    required: true,
-  },
-  { 
-    id: 'MSHA002', 
-    suite: 'MSHA', 
-    title: 'Equipment Inspection',
-    description: 'Mobile equipment pre-operational inspection',
-    frequency: 'daily',
-    status: 'pending',
-    route: '/equipment-selection',
-    icon: 'checklist',
-    required: true,
-  },
-  { 
-    id: 'CONST001', 
-    suite: 'Construction', 
-    title: 'Equipment Inspection',
-    description: 'Construction equipment pre-operational check',
-    frequency: 'daily',
-    status: 'pending',
-    route: '/equipment-selection',
-    icon: 'hardhat',
-    required: true,
-  },
-];
-
-const assignedEquipment = [
-  { id: 'EQ001', name: 'Excavator CAT 320', status: 'active', lastInspection: '2024-01-22' },
-  { id: 'EQ002', name: 'Dump Truck Volvo A40G', status: 'maintenance', lastInspection: '2024-01-21' },
-  { id: 'EQ003', name: 'Bulldozer CAT D8T', status: 'active', lastInspection: '2024-01-22' },
-  { id: 'EQ004', name: 'Loader CAT 966M', status: 'defect', lastInspection: '2024-01-20' },
-  { id: 'EQ005', name: 'Grader CAT 140M3', status: 'active', lastInspection: '2024-01-22' },
-];
-
 const MaintenanceDashboard = () => {
   const [tickets, setTickets] = useState<Ticket[]>(mockTickets);
   const [filteredTickets, setFilteredTickets] = useState<Ticket[]>(mockTickets);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [severityFilter, setSeverityFilter] = useState<string>('all');
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [activeView, setActiveView] = useState<'dashboard' | 'defect-detail' | 'repair-doc'>('dashboard');
   const [selectedEquipmentId, setSelectedEquipmentId] = useState<string>('');
   const [notificationDrawerOpen, setNotificationDrawerOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('tickets');
   const [qrScanOpen, setQrScanOpen] = useState(false);
-  const [activeFormFilter, setActiveFormFilter] = useState('msha');
   
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { isOnline } = useOffline();
   const { toast } = useToast();
 
+  // Simulate real-time updates
   useEffect(() => {
     const interval = setInterval(() => {
+      setLastUpdate(new Date());
+      
+      // Simulate occasional status updates
       if (Math.random() > 0.8) {
         setTickets(prev => 
           prev.map(ticket => {
             if (ticket.status === 'Open' && Math.random() > 0.7) {
               return { ...ticket, status: 'In Progress' as const };
             }
+            if (ticket.status === 'In Progress' && Math.random() > 0.9) {
+              return { ...ticket, status: 'Completed' as const };
+            }
             return ticket;
           })
         );
       }
-    }, 30000);
+    }, 30000); // Update every 30 seconds
+
     return () => clearInterval(interval);
   }, []);
 
+  // Filter tickets based on selected filters
   useEffect(() => {
     let filtered = tickets;
+    
     if (statusFilter !== 'all') {
       filtered = filtered.filter(ticket => ticket.status === statusFilter);
     }
+    
     if (severityFilter !== 'all') {
       filtered = filtered.filter(ticket => ticket.severity === severityFilter);
     }
+    
     setFilteredTickets(filtered);
   }, [tickets, statusFilter, severityFilter]);
 
@@ -198,41 +164,19 @@ const MaintenanceDashboard = () => {
       case 'Open': return <AlertTriangle className="h-4 w-4" />;
       case 'In Progress': return <Clock className="h-4 w-4" />;
       case 'Completed': return <CheckCircle className="h-4 w-4" />;
+      case 'Pending Parts': return <Clock className="h-4 w-4" />;
       default: return <Clock className="h-4 w-4" />;
-    }
-  };
-
-  const getFormIcon = (iconType: string) => {
-    switch (iconType) {
-      case 'workplace': return <ClipboardCheck className="h-5 w-5" />;
-      case 'fire': return <FireExtinguisher className="h-5 w-5" />;
-      case 'checklist': return <CheckCircle className="h-5 w-5" />;
-      case 'hardhat': return <HardHat className="h-5 w-5" />;
-      default: return <FileText className="h-5 w-5" />;
-    }
-  };
-
-  const getEquipmentStatusBadge = (status: string) => {
-    switch (status) {
-      case 'active':
-        return <Badge className="bg-success text-success-foreground"><CheckCircle className="h-3 w-3 mr-1" />Active</Badge>;
-      case 'maintenance':
-        return <Badge className="bg-warning text-warning-foreground"><Wrench className="h-3 w-3 mr-1" />Maintenance</Badge>;
-      case 'defect':
-        return <Badge className="bg-destructive text-destructive-foreground"><AlertTriangle className="h-3 w-3 mr-1" />Defect</Badge>;
-      default:
-        return <Badge variant="outline">Unknown</Badge>;
     }
   };
 
   const criticalCount = tickets.filter(t => t.severity === 'Critical').length;
   const inProgressCount = tickets.filter(t => t.status === 'In Progress').length;
   const openCount = tickets.filter(t => t.status === 'Open').length;
-  const completedCount = tickets.filter(t => t.status === 'Completed').length;
 
   const handleViewTicket = (equipmentId: string) => {
     setSelectedEquipmentId(equipmentId);
     setActiveView('defect-detail');
+    setNotificationDrawerOpen(false);
   };
 
   const handleStartRepair = () => {
@@ -240,7 +184,11 @@ const MaintenanceDashboard = () => {
   };
 
   const handleCompleteRepair = () => {
-    toast({ title: "Ticket Closed", description: "Equipment status updated to Active" });
+    // Update equipment status to Active
+    toast({
+      title: "Ticket Closed",
+      description: "Equipment status updated to Active",
+    });
     setActiveView('dashboard');
   };
 
@@ -249,18 +197,7 @@ const MaintenanceDashboard = () => {
     setSelectedEquipmentId('');
   };
 
-  const handleTabChange = (tab: string) => {
-    if (tab === 'notifications') {
-      setNotificationDrawerOpen(true);
-    } else {
-      setActiveTab(tab);
-    }
-  };
-
-  const filteredForms = complianceForms.filter(
-    form => form.suite.toLowerCase() === activeFormFilter.toLowerCase()
-  );
-
+  // Handle different views
   if (activeView === 'defect-detail') {
     return (
       <DefectDetailView
@@ -281,124 +218,134 @@ const MaintenanceDashboard = () => {
     );
   }
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'overview':
-        return (
-          <div className="space-y-6">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card>
-                <CardContent className="pt-4 pb-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground">Open Tickets</p>
-                      <p className="text-2xl font-bold">{openCount}</p>
-                    </div>
-                    <AlertTriangle className="h-8 w-8 text-destructive/20" />
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-4 pb-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground">In Progress</p>
-                      <p className="text-2xl font-bold text-warning">{inProgressCount}</p>
-                    </div>
-                    <RefreshCw className="h-8 w-8 text-warning/20" />
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-4 pb-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground">Critical</p>
-                      <p className="text-2xl font-bold text-destructive">{criticalCount}</p>
-                    </div>
-                    <AlertCircle className="h-8 w-8 text-destructive/20" />
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-4 pb-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground">Completed</p>
-                      <p className="text-2xl font-bold text-success">{completedCount}</p>
-                    </div>
-                    <CheckCircle className="h-8 w-8 text-success/20" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Quick Actions */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <Button className="w-full justify-start h-11" variant="outline" onClick={() => navigate('/equipment-selection')}>
-                    <ClipboardCheck className="h-4 w-4 mr-3" />
-                    Start Equipment Inspection
-                  </Button>
-                  <Button className="w-full justify-start h-11" variant="outline" onClick={() => navigate('/workplace-exams')}>
-                    <HardHat className="h-4 w-4 mr-3" />
-                    Workplace Exam
-                  </Button>
-                  <Button className="w-full justify-start h-11" variant="outline" onClick={() => setActiveTab('tickets')}>
-                    <Wrench className="h-4 w-4 mr-3" />
-                    View Work Orders
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Recent Tickets */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4" />
-                    Active Work Orders
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {tickets.filter(t => t.status !== 'Completed').slice(0, 4).map((ticket) => (
-                      <div 
-                        key={ticket.id} 
-                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                        onClick={() => handleViewTicket(ticket.equipmentId)}
-                      >
-                        <div className="flex items-center gap-3">
-                          <Badge variant="outline" className="font-mono text-xs">{ticket.id}</Badge>
-                          <div>
-                            <p className="text-sm font-medium">{ticket.equipmentId}</p>
-                            <p className="text-xs text-muted-foreground truncate max-w-[200px]">{ticket.description}</p>
-                          </div>
-                        </div>
-                        <Badge className={getSeverityColor(ticket.severity)} variant="secondary">
-                          {ticket.severity}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="bg-card border-b border-border p-4">
+        <div className="flex items-center justify-between max-w-6xl mx-auto">
+          <div className="flex items-center gap-4">
+            <Wrench className="h-8 w-8 text-primary" />
+            <div>
+              <h1 className="text-xl font-semibold">Maintenance Dashboard</h1>
+              <p className="text-sm text-muted-foreground">
+                Welcome, {user?.name} - Last updated: {lastUpdate.toLocaleTimeString()}
+              </p>
             </div>
           </div>
-        );
+          
+          <div className="flex items-center gap-4">
+            <Button 
+              onClick={() => setQrScanOpen(true)}
+              className="btn-mining"
+            >
+              <QrCode className="h-4 w-4 mr-2" />
+              Scan QR
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => setNotificationDrawerOpen(true)}
+              className="relative"
+            >
+              <Bell className="h-4 w-4 mr-2" />
+              Alerts
+              <Badge className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground text-xs px-1">
+                2
+              </Badge>
+            </Button>
+            
+            {isOnline ? (
+              <div className="status-online">
+                <Wifi className="h-4 w-4" />
+                Online
+              </div>
+            ) : (
+              <div className="status-offline">
+                <WifiOff className="h-4 w-4" />
+                Offline
+              </div>
+            )}
+            
+            <Button variant="outline" onClick={logout}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
+        </div>
+      </div>
 
-      case 'tickets':
-        return (
-          <div className="space-y-6">
+      <div className="max-w-6xl mx-auto p-6 space-y-6">
+        {/* Key Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Critical Issues</p>
+                  <p className="text-2xl font-bold text-destructive">{criticalCount}</p>
+                </div>
+                <AlertTriangle className="h-8 w-8 text-destructive" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">In Progress</p>
+                  <p className="text-2xl font-bold text-warning">{inProgressCount}</p>
+                </div>
+                <Clock className="h-8 w-8 text-warning" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Open Tickets</p>
+                  <p className="text-2xl font-bold">{openCount}</p>
+                </div>
+                <Wrench className="h-8 w-8 text-primary" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Closed Tickets</p>
+                  <p className="text-2xl font-bold text-success">{tickets.filter(t => t.status === 'Completed').length}</p>
+                </div>
+                <CheckCircle className="h-8 w-8 text-success" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main Content Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="tickets" className="flex items-center gap-2">
+              <Wrench className="h-4 w-4" />
+              Active Tickets
+            </TabsTrigger>
+            <TabsTrigger value="history" className="flex items-center gap-2">
+              <History className="h-4 w-4" />
+              Maintenance History
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="tickets" className="space-y-6">
+            {/* Filters */}
             <Card>
-              <CardHeader className="pb-3">
+              <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Filter className="h-5 w-5" />
-                  Filter Work Orders
+                  Filter Tickets
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -406,7 +353,9 @@ const MaintenanceDashboard = () => {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Status</label>
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="input-mining">
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Statuses</SelectItem>
                         <SelectItem value="Open">Open</SelectItem>
@@ -416,10 +365,13 @@ const MaintenanceDashboard = () => {
                       </SelectContent>
                     </Select>
                   </div>
+
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Severity</label>
                     <Select value={severityFilter} onValueChange={setSeverityFilter}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="input-mining">
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Severities</SelectItem>
                         <SelectItem value="Critical">Critical</SelectItem>
@@ -433,199 +385,80 @@ const MaintenanceDashboard = () => {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle>Work Orders ({filteredTickets.length})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {filteredTickets.map((ticket) => (
-                    <Card key={ticket.id} className="border-l-4 border-l-primary">
-                      <CardContent className="pt-4 pb-3">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <Badge variant="outline" className="font-mono">{ticket.id}</Badge>
-                            <Badge className={getStatusColor(ticket.status)}>
-                              {getStatusIcon(ticket.status)}
-                              <span className="ml-1">{ticket.status}</span>
-                            </Badge>
-                            <Badge className={getSeverityColor(ticket.severity)}>{ticket.severity}</Badge>
-                          </div>
-                          <Button variant="outline" size="sm" onClick={() => handleViewTicket(ticket.equipmentId)}>
-                            <Eye className="h-4 w-4 mr-1" />View
-                          </Button>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <h3 className="font-medium">{ticket.equipmentId}</h3>
-                            <p className="text-sm text-muted-foreground">{ticket.equipmentType}</p>
-                            <p className="text-sm mt-1">{ticket.description}</p>
-                          </div>
-                          <div className="space-y-1 text-sm">
-                            <div className="flex justify-between"><span className="text-muted-foreground">Assigned:</span><span>{ticket.assignedTo}</span></div>
-                            <div className="flex justify-between"><span className="text-muted-foreground">Est. Hours:</span><span>{ticket.estimatedHours}h</span></div>
-                            <div className="flex justify-between"><span className="text-muted-foreground">Created:</span><span>{new Date(ticket.createdAt).toLocaleDateString()}</span></div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        );
-
-      case 'inspections':
-        return (
-          <div className="space-y-6">
+            {/* Ticket List */}
             <Card>
               <CardHeader>
-                <CardTitle>Compliance Forms</CardTitle>
+                <CardTitle>Maintenance Tickets ({filteredTickets.length})</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="mb-6">
-                  <label className="text-sm font-medium mb-2 block">Select Suite</label>
-                  <Select value={activeFormFilter} onValueChange={setActiveFormFilter}>
-                    <SelectTrigger className="w-full md:w-[280px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="msha">MSHA - Mine Safety</SelectItem>
-                      <SelectItem value="construction">Construction - Site Safety</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredForms.map((form) => (
-                    <Card key={form.id} className="hover:shadow-md transition-shadow">
-                      <CardContent className="pt-5">
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="p-2 bg-muted rounded-lg">{getFormIcon(form.icon)}</div>
-                          <div>
-                            <h3 className="font-semibold">{form.title}</h3>
-                            <Badge variant="outline" className="text-xs mt-1">{form.suite}</Badge>
+                <div className="space-y-4">
+                  {filteredTickets.map((ticket) => (
+                    <Card key={ticket.id} className="border-l-4 border-l-primary">
+                      <CardContent className="pt-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <Badge variant="outline" className="font-mono">
+                              {ticket.id}
+                            </Badge>
+                            <Badge className={getStatusColor(ticket.status)}>
+                              {getStatusIcon(ticket.status)}
+                              {ticket.status}
+                            </Badge>
+                            <Badge className={getSeverityColor(ticket.severity)}>
+                              {ticket.severity}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">
+                              {ticket.estimatedHours}h estimated
+                            </span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleViewTicket(ticket.equipmentId)}
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Details
+                            </Button>
                           </div>
                         </div>
-                        <p className="text-sm text-muted-foreground mb-4">{form.description}</p>
-                        <Button className="w-full" onClick={() => navigate(form.route)}>
-                          <FileText className="h-4 w-4 mr-2" />Start Form
-                        </Button>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <h3 className="font-medium mb-1">{ticket.equipmentId}</h3>
+                            <p className="text-sm text-muted-foreground mb-2">
+                              {ticket.equipmentType}
+                            </p>
+                            <p className="text-sm">{ticket.description}</p>
+                          </div>
+                          
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Reported by:</span>
+                              <span>{ticket.reportedBy}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Assigned to:</span>
+                              <span>{ticket.assignedTo}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Created:</span>
+                              <span>{new Date(ticket.createdAt).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        </div>
                       </CardContent>
                     </Card>
                   ))}
                 </div>
               </CardContent>
             </Card>
-          </div>
-        );
+          </TabsContent>
 
-      case 'equipment':
-        return (
-          <Card>
-            <CardHeader>
-              <CardTitle>Assigned Assets</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {assignedEquipment.map((equipment) => (
-                  <div key={equipment.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className="p-2 bg-muted rounded-lg">
-                        <Wrench className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-medium">{equipment.name}</h3>
-                        <p className="text-sm text-muted-foreground">ID: {equipment.id} • Last: {equipment.lastInspection}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      {getEquipmentStatusBadge(equipment.status)}
-                      <Button size="sm" onClick={() => navigate('/equipment-selection')}>Inspect</Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        );
-
-      case 'schedule':
-        return (
-          <Card>
-            <CardHeader><CardTitle className="flex items-center gap-2"><Calendar className="h-5 w-5" />Scheduled Maintenance</CardTitle></CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">View and manage scheduled maintenance tasks.</p>
-              <div className="mt-4 p-8 border-2 border-dashed rounded-lg text-center text-muted-foreground">
-                <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>Calendar view coming soon</p>
-              </div>
-            </CardContent>
-          </Card>
-        );
-
-      case 'parts':
-        return (
-          <Card>
-            <CardHeader><CardTitle className="flex items-center gap-2"><Package className="h-5 w-5" />Parts & Inventory</CardTitle></CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Track parts and inventory for maintenance tasks.</p>
-              <div className="mt-4 p-8 border-2 border-dashed rounded-lg text-center text-muted-foreground">
-                <Package className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>Inventory management coming soon</p>
-              </div>
-            </CardContent>
-          </Card>
-        );
-
-      case 'history':
-        return <MaintenanceHistory userRole="maintainer" />;
-
-      case 'settings':
-        return (
-          <Card>
-            <CardHeader><CardTitle>Settings</CardTitle></CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Configure your preferences and account settings.</p>
-            </CardContent>
-          </Card>
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="flex h-screen bg-background">
-      {/* Sidebar */}
-      <MaintainerSidebar
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-        onQrScan={() => setQrScanOpen(true)}
-        notificationCount={2}
-      />
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Header */}
-        <header className="h-14 border-b border-border bg-card px-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-semibold capitalize">{activeTab === 'overview' ? 'Dashboard' : activeTab.replace('-', ' ')}</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <SiteSwitcher />
-            <div className={isOnline ? "status-online" : "status-offline"}>
-              {isOnline ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
-              {isOnline ? 'Online' : 'Offline'}
-            </div>
-          </div>
-        </header>
-
-        {/* Scrollable Content */}
-        <main className="flex-1 overflow-y-auto p-6">
-          {renderContent()}
-        </main>
+          <TabsContent value="history">
+            <MaintenanceHistory userRole="maintainer" />
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Notification Drawer */}
@@ -649,4 +482,5 @@ const MaintenanceDashboard = () => {
   );
 };
 
+export { MaintenanceDashboard };
 export default MaintenanceDashboard;
