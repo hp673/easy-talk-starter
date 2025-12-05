@@ -12,13 +12,15 @@ import {
   Search, 
   Filter, 
   Eye, 
-  Calendar,
   FileText,
   CheckCircle,
   AlertTriangle,
   Clock,
   Download,
-  ClipboardCheck
+  ClipboardCheck,
+  Paperclip,
+  User,
+  X
 } from 'lucide-react';
 
 interface InspectionRecord {
@@ -30,9 +32,12 @@ interface InspectionRecord {
   inspectionDate: string;
   status: 'Passed' | 'Defect' | 'Draft';
   submittedBy: string;
+  inspector: string;
   suite: string;
   notes?: string;
   defectDetails?: string;
+  hasAttachments: boolean;
+  attachmentCount: number;
 }
 
 const mockInspectionData: InspectionRecord[] = [
@@ -45,8 +50,11 @@ const mockInspectionData: InspectionRecord[] = [
     inspectionDate: '2025-11-18',
     status: 'Passed',
     submittedBy: 'John Operator',
+    inspector: 'John Operator',
     suite: 'MSHA',
-    notes: 'All systems operational. Minor dust accumulation noted on air filter.'
+    notes: 'All systems operational. Minor dust accumulation noted on air filter.',
+    hasAttachments: true,
+    attachmentCount: 2
   },
   {
     id: 'INS-002',
@@ -57,9 +65,12 @@ const mockInspectionData: InspectionRecord[] = [
     inspectionDate: '2025-11-11',
     status: 'Defect',
     submittedBy: 'John Operator',
+    inspector: 'John Operator',
     suite: 'MSHA',
     notes: 'Brake warning light illuminated.',
-    defectDetails: 'Hydraulic brake system pressure below threshold. Maintenance ticket created.'
+    defectDetails: 'Hydraulic brake system pressure below threshold. Maintenance ticket created.',
+    hasAttachments: true,
+    attachmentCount: 3
   },
   {
     id: 'INS-003',
@@ -70,8 +81,11 @@ const mockInspectionData: InspectionRecord[] = [
     inspectionDate: '2025-11-10',
     status: 'Passed',
     submittedBy: 'Sarah Tech',
+    inspector: 'Sarah Tech',
     suite: 'Construction',
-    notes: 'Equipment in good working condition.'
+    notes: 'Equipment in good working condition.',
+    hasAttachments: false,
+    attachmentCount: 0
   },
   {
     id: 'INS-004',
@@ -82,8 +96,11 @@ const mockInspectionData: InspectionRecord[] = [
     inspectionDate: '2025-11-09',
     status: 'Passed',
     submittedBy: 'John Operator',
+    inspector: 'Mike Johnson',
     suite: 'MSHA',
-    notes: 'Area clear of hazards. All safety equipment in place.'
+    notes: 'Area clear of hazards. All safety equipment in place.',
+    hasAttachments: true,
+    attachmentCount: 1
   },
   {
     id: 'INS-005',
@@ -94,8 +111,11 @@ const mockInspectionData: InspectionRecord[] = [
     inspectionDate: '2025-11-08',
     status: 'Draft',
     submittedBy: 'John Operator',
+    inspector: 'John Operator',
     suite: 'TCEQ',
-    notes: 'Inspection in progress'
+    notes: 'Inspection in progress',
+    hasAttachments: false,
+    attachmentCount: 0
   },
   {
     id: 'INS-006',
@@ -106,8 +126,11 @@ const mockInspectionData: InspectionRecord[] = [
     inspectionDate: '2025-11-07',
     status: 'Defect',
     submittedBy: 'Mike Johnson',
+    inspector: 'Mike Johnson',
     suite: 'Construction',
-    defectDetails: 'Track tension needs adjustment. Left track showing excessive wear.'
+    defectDetails: 'Track tension needs adjustment. Left track showing excessive wear.',
+    hasAttachments: true,
+    attachmentCount: 4
   }
 ];
 
@@ -117,33 +140,40 @@ const InspectionFormsHistory = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [formTypeFilter, setFormTypeFilter] = useState('all');
   const [equipmentFilter, setEquipmentFilter] = useState('all');
+  const [inspectorFilter, setInspectorFilter] = useState('all');
+  const [attachmentFilter, setAttachmentFilter] = useState('all');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [selectedRecord, setSelectedRecord] = useState<InspectionRecord | null>(null);
 
   const uniqueEquipment = [...new Set(mockInspectionData.map(r => r.equipmentName))];
   const uniqueFormTypes = [...new Set(mockInspectionData.map(r => r.formType))];
+  const uniqueInspectors = [...new Set(mockInspectionData.map(r => r.inspector))];
 
   const filteredRecords = useMemo(() => {
     return mockInspectionData.filter(record => {
-      // Search filter
       if (searchTerm && !record.formName.toLowerCase().includes(searchTerm.toLowerCase()) &&
           !record.equipmentName.toLowerCase().includes(searchTerm.toLowerCase()) &&
           !record.equipmentId.toLowerCase().includes(searchTerm.toLowerCase())) {
         return false;
       }
-      // Status filter
       if (statusFilter !== 'all' && record.status !== statusFilter) {
         return false;
       }
-      // Form type filter
       if (formTypeFilter !== 'all' && record.formType !== formTypeFilter) {
         return false;
       }
-      // Equipment filter
       if (equipmentFilter !== 'all' && record.equipmentName !== equipmentFilter) {
         return false;
       }
-      // Date range filter
+      if (inspectorFilter !== 'all' && record.inspector !== inspectorFilter) {
+        return false;
+      }
+      if (attachmentFilter === 'has' && !record.hasAttachments) {
+        return false;
+      }
+      if (attachmentFilter === 'none' && record.hasAttachments) {
+        return false;
+      }
       if (dateRange.start && record.inspectionDate < dateRange.start) {
         return false;
       }
@@ -152,7 +182,7 @@ const InspectionFormsHistory = () => {
       }
       return true;
     });
-  }, [searchTerm, statusFilter, formTypeFilter, equipmentFilter, dateRange]);
+  }, [searchTerm, statusFilter, formTypeFilter, equipmentFilter, inspectorFilter, attachmentFilter, dateRange]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -200,8 +230,14 @@ const InspectionFormsHistory = () => {
     setStatusFilter('all');
     setFormTypeFilter('all');
     setEquipmentFilter('all');
+    setInspectorFilter('all');
+    setAttachmentFilter('all');
     setDateRange({ start: '', end: '' });
   };
+
+  const hasActiveFilters = searchTerm || statusFilter !== 'all' || formTypeFilter !== 'all' || 
+    equipmentFilter !== 'all' || inspectorFilter !== 'all' || attachmentFilter !== 'all' || 
+    dateRange.start || dateRange.end;
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -216,16 +252,16 @@ const InspectionFormsHistory = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-card border-b border-border p-4">
-        <div className="flex items-center gap-4 max-w-6xl mx-auto">
-          <Button variant="outline" onClick={() => navigate('/operator-dashboard')}>
+      <div className="bg-card border-b border-border px-6 py-4">
+        <div className="flex items-center gap-4 max-w-7xl mx-auto">
+          <Button variant="outline" size="sm" onClick={() => navigate('/operator-dashboard')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
+            Back
           </Button>
           <div>
             <h1 className="text-xl font-semibold flex items-center gap-2">
-              <ClipboardCheck className="h-6 w-6" />
-              Inspection Forms History
+              <ClipboardCheck className="h-6 w-6 text-primary" />
+              Inspection Forms History – Audit View
             </h1>
             <p className="text-sm text-muted-foreground">
               Search and review past inspection submissions
@@ -234,93 +270,115 @@ const InspectionFormsHistory = () => {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto p-6 space-y-6">
+      <div className="max-w-7xl mx-auto p-6 space-y-6">
         {/* Filters Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5" />
-              Filters & Search
-            </CardTitle>
+        <Card className="shadow-sm">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Filter className="h-5 w-5" />
+                Filters
+              </CardTitle>
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="text-muted-foreground">
+                  <X className="h-4 w-4 mr-1" />
+                  Clear All
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
               {/* Search */}
-              <div className="space-y-2 lg:col-span-2">
-                <label className="text-sm font-medium">Search</label>
+              <div className="space-y-1.5 xl:col-span-2">
+                <label className="text-xs font-medium text-muted-foreground">Search</label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="Form name, equipment..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 h-9"
                   />
                 </div>
               </div>
 
               {/* Date Range */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">From Date</label>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">From Date</label>
                 <Input
                   type="date"
                   value={dateRange.start}
                   onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                  className="h-9"
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">To Date</label>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">To Date</label>
                 <Input
                   type="date"
                   value={dateRange.end}
                   onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                  className="h-9"
                 />
               </div>
 
-              {/* Equipment Filter */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Equipment</label>
-                <Select value={equipmentFilter} onValueChange={setEquipmentFilter}>
-                  <SelectTrigger className="bg-background">
-                    <SelectValue placeholder="All Equipment" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background z-50">
-                    <SelectItem value="all">All Equipment</SelectItem>
-                    {uniqueEquipment.map(equipment => (
-                      <SelectItem key={equipment} value={equipment}>
-                        {equipment}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
               {/* Form Type Filter */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Form Type</label>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Form Type</label>
                 <Select value={formTypeFilter} onValueChange={setFormTypeFilter}>
-                  <SelectTrigger className="bg-background">
+                  <SelectTrigger className="bg-background h-9">
                     <SelectValue placeholder="All Types" />
                   </SelectTrigger>
                   <SelectContent className="bg-background z-50">
                     <SelectItem value="all">All Types</SelectItem>
                     {uniqueFormTypes.map(type => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Equipment Filter */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Equipment</label>
+                <Select value={equipmentFilter} onValueChange={setEquipmentFilter}>
+                  <SelectTrigger className="bg-background h-9">
+                    <SelectValue placeholder="All Equipment" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background z-50">
+                    <SelectItem value="all">All Equipment</SelectItem>
+                    {uniqueEquipment.map(equipment => (
+                      <SelectItem key={equipment} value={equipment}>{equipment}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Inspector Filter */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Inspector</label>
+                <Select value={inspectorFilter} onValueChange={setInspectorFilter}>
+                  <SelectTrigger className="bg-background h-9">
+                    <SelectValue placeholder="All Inspectors" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background z-50">
+                    <SelectItem value="all">All Inspectors</SelectItem>
+                    {uniqueInspectors.map(inspector => (
+                      <SelectItem key={inspector} value={inspector}>{inspector}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
-            {/* Second row of filters */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+            {/* Second row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
               {/* Status Filter */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Status</label>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Status</label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="bg-background">
+                  <SelectTrigger className="bg-background h-9">
                     <SelectValue placeholder="All Statuses" />
                   </SelectTrigger>
                   <SelectContent className="bg-background z-50">
@@ -332,12 +390,19 @@ const InspectionFormsHistory = () => {
                 </Select>
               </div>
 
-              {/* Clear Filters Button */}
-              <div className="space-y-2 md:col-start-4">
-                <label className="text-sm font-medium">&nbsp;</label>
-                <Button variant="outline" onClick={clearFilters} className="w-full">
-                  Clear Filters
-                </Button>
+              {/* Attachment Filter */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Attachments</label>
+                <Select value={attachmentFilter} onValueChange={setAttachmentFilter}>
+                  <SelectTrigger className="bg-background h-9">
+                    <SelectValue placeholder="All" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background z-50">
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="has">Has Attachments</SelectItem>
+                    <SelectItem value="none">No Attachments</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </CardContent>
@@ -346,77 +411,101 @@ const InspectionFormsHistory = () => {
         {/* Results Summary */}
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing <span className="font-medium text-foreground">{filteredRecords.length}</span> of {mockInspectionData.length} records
+            Showing <span className="font-semibold text-foreground">{filteredRecords.length}</span> of {mockInspectionData.length} records
           </p>
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
         </div>
 
-        {/* Records List */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Inspection Records</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {filteredRecords.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <ClipboardCheck className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p className="text-lg font-medium">No inspection records found</p>
-                <p className="text-sm mt-1">Try adjusting your filters</p>
-              </div>
-            ) : (
-              filteredRecords.map((record) => (
-                <Card key={record.id} className="border hover:shadow-md transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      {/* Left: Form Info */}
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs text-muted-foreground font-mono">
-                            Inspection Id: {record.id}
-                          </span>
+        {/* Records Table */}
+        <Card className="shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-muted/50 border-b">
+                <tr>
+                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Form Name</th>
+                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Equipment</th>
+                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Date</th>
+                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Inspector</th>
+                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Status</th>
+                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Attachments</th>
+                  <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {filteredRecords.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="px-4 py-12 text-center">
+                      <ClipboardCheck className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
+                      <p className="text-lg font-medium text-muted-foreground">No inspection records found</p>
+                      <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters</p>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredRecords.map((record) => (
+                    <tr key={record.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
                           {getSuiteBadge(record.suite)}
+                          <div>
+                            <p className="font-medium text-sm text-foreground hover:text-primary cursor-pointer"
+                               onClick={() => setSelectedRecord(record)}>
+                              {record.formName}
+                            </p>
+                            <p className="text-xs text-muted-foreground">{record.formType}</p>
+                          </div>
                         </div>
-                        <h3 className="font-semibold text-primary hover:underline cursor-pointer" 
-                            onClick={() => setSelectedRecord(record)}>
-                          {record.formName}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          {record.equipmentName} • {record.equipmentId}
-                        </p>
-                      </div>
-
-                      {/* Middle: Status */}
-                      <div className="flex items-center gap-3">
+                      </td>
+                      <td className="px-4 py-3">
+                        <p className="text-sm text-foreground">{record.equipmentName}</p>
+                        <p className="text-xs text-muted-foreground">{record.equipmentId}</p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <p className="text-sm text-foreground">{formatDate(record.inspectionDate)}</p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-foreground">{record.inspector}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
                         {getStatusBadge(record.status)}
-                      </div>
-
-                      {/* Right: Date & Action */}
-                      <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
-                        <div className="text-sm text-right">
-                          <p className="text-muted-foreground">Inspected on:</p>
-                          <p className="font-medium">{formatDate(record.inspectionDate)}</p>
-                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        {record.hasAttachments ? (
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <Paperclip className="h-4 w-4" />
+                            <span>{record.attachmentCount}</span>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-right">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => setSelectedRecord(record)}
-                          className="whitespace-nowrap"
                         >
-                          <Eye className="h-4 w-4 mr-2" />
-                          View Details
+                          <Eye className="h-4 w-4 mr-1" />
+                          View
                         </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </CardContent>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </Card>
       </div>
 
       {/* Detail Dialog */}
       <Dialog open={!!selectedRecord} onOpenChange={() => setSelectedRecord(null)}>
-        <DialogContent className="max-w-2xl max-h-[80vh]">
+        <DialogContent className="max-w-2xl max-h-[85vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
@@ -424,7 +513,7 @@ const InspectionFormsHistory = () => {
             </DialogTitle>
           </DialogHeader>
           {selectedRecord && (
-            <ScrollArea className="max-h-[60vh]">
+            <ScrollArea className="max-h-[65vh]">
               <div className="space-y-6 p-1">
                 {/* Header Info */}
                 <div className="flex items-center justify-between">
@@ -456,19 +545,34 @@ const InspectionFormsHistory = () => {
                   </div>
                 </div>
 
+                {/* Inspector */}
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Inspector</label>
+                  <p className="font-medium">{selectedRecord.inspector}</p>
+                </div>
+
                 {/* Submitted By */}
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Submitted By</label>
                   <p className="font-medium">{selectedRecord.submittedBy}</p>
                 </div>
 
+                {/* Attachments */}
+                {selectedRecord.hasAttachments && (
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Attachments</label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Paperclip className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">{selectedRecord.attachmentCount} file(s) attached</span>
+                    </div>
+                  </div>
+                )}
+
                 {/* Notes */}
                 {selectedRecord.notes && (
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">Inspection Notes</label>
-                    <div className="bg-muted p-3 rounded-lg text-sm mt-1">
-                      {selectedRecord.notes}
-                    </div>
+                    <label className="text-sm font-medium text-muted-foreground">Notes</label>
+                    <p className="mt-1 p-3 bg-muted rounded-lg text-sm">{selectedRecord.notes}</p>
                   </div>
                 )}
 
@@ -476,9 +580,9 @@ const InspectionFormsHistory = () => {
                 {selectedRecord.defectDetails && (
                   <div>
                     <label className="text-sm font-medium text-red-600">Defect Details</label>
-                    <div className="bg-red-50 border border-red-200 p-3 rounded-lg text-sm mt-1 text-red-800">
+                    <p className="mt-1 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
                       {selectedRecord.defectDetails}
-                    </div>
+                    </p>
                   </div>
                 )}
 
@@ -488,11 +592,6 @@ const InspectionFormsHistory = () => {
                     <Download className="h-4 w-4 mr-2" />
                     Download PDF
                   </Button>
-                  {selectedRecord.status === 'Defect' && (
-                    <Button variant="outline" className="flex-1">
-                      Open Ticket
-                    </Button>
-                  )}
                   <Button variant="outline" onClick={() => setSelectedRecord(null)}>
                     Close
                   </Button>
