@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import SiteSwitcher from '@/components/SiteSwitcher';
-import { QRScanActionSheet } from '@/components/QRScanActionSheet';
 import { 
   QrCode, 
   LogOut, 
@@ -40,7 +39,6 @@ const OperatorDashboard = () => {
   const { isOnline } = useOffline();
   const navigate = useNavigate();
   const [activeFormFilter, setActiveFormFilter] = useState('msha');
-  const [qrScanOpen, setQrScanOpen] = useState(false);
 
   // Compliance forms data - MVP forms only (done/included)
   const complianceForms = [
@@ -352,11 +350,11 @@ const OperatorDashboard = () => {
       {/* Quick Action */}
       <div className="mb-6">
         <Button 
-          onClick={() => setQrScanOpen(true)}
+          onClick={handleStartInspection}
           className="btn-mining h-14 text-lg px-8"
         >
           <QrCode className="h-6 w-6 mr-3" />
-          Scan QR Code
+          Start New Inspection
         </Button>
       </div>
 
@@ -571,17 +569,6 @@ const OperatorDashboard = () => {
           </div>
         </CardContent>
       </Card>
-
-      {/* QR Scan Action Sheet */}
-      <QRScanActionSheet
-        open={qrScanOpen}
-        onOpenChange={setQrScanOpen}
-        equipmentId="CAT-789C-001"
-        equipmentName="Haul Truck CAT 789C"
-        category="Haul Truck"
-        siteName="North Mining Site"
-        status="Active"
-      />
     </div>
   );
 };

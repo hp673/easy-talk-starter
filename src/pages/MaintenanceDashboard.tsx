@@ -15,9 +15,8 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   Wrench, AlertTriangle, Clock, CheckCircle, TrendingUp, 
   Users, Wifi, WifiOff, LogOut, Filter, Bell, History,
-  Settings, Eye, FileText, QrCode
+  Settings, Eye, FileText
 } from 'lucide-react';
-import { QRScanActionSheet } from '@/components/QRScanActionSheet';
 
 interface Ticket {
   id: string;
@@ -93,7 +92,6 @@ const MaintenanceDashboard = () => {
   const [selectedEquipmentId, setSelectedEquipmentId] = useState<string>('');
   const [notificationDrawerOpen, setNotificationDrawerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('tickets');
-  const [qrScanOpen, setQrScanOpen] = useState(false);
   
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -234,14 +232,6 @@ const MaintenanceDashboard = () => {
           </div>
           
           <div className="flex items-center gap-4">
-            <Button 
-              onClick={() => setQrScanOpen(true)}
-              className="btn-mining"
-            >
-              <QrCode className="h-4 w-4 mr-2" />
-              Scan QR
-            </Button>
-            
             <Button 
               variant="outline" 
               onClick={() => setNotificationDrawerOpen(true)}
@@ -466,17 +456,6 @@ const MaintenanceDashboard = () => {
         isOpen={notificationDrawerOpen}
         onClose={() => setNotificationDrawerOpen(false)}
         onViewTicket={handleViewTicket}
-      />
-
-      {/* QR Scan Action Sheet */}
-      <QRScanActionSheet
-        open={qrScanOpen}
-        onOpenChange={setQrScanOpen}
-        equipmentId="CAT-789C-001"
-        equipmentName="Haul Truck CAT 789C"
-        category="Haul Truck"
-        siteName="North Mining Site"
-        status="Active"
       />
     </div>
   );

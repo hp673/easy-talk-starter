@@ -6,13 +6,11 @@ import SiteManagerDashboard from "./SiteManagerDashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Users, FileText, Settings, BarChart3, Shield, QrCode } from "lucide-react";
-import { QRScanActionSheet } from '@/components/QRScanActionSheet';
+import { Building2, Users, FileText, Settings, BarChart3, Shield } from "lucide-react";
 
 // Organization Admin Dashboard
 const OrgAdminDashboard = () => {
   const [activeSection, setActiveSection] = useState<string>('overview');
-  const [qrScanOpen, setQrScanOpen] = useState(false);
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -22,10 +20,6 @@ const OrgAdminDashboard = () => {
           <p className="text-muted-foreground">Manage sites, users, and organization-wide settings</p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={() => setQrScanOpen(true)} className="btn-mining">
-            <QrCode className="h-4 w-4 mr-2" />
-            Scan Equipment QR
-          </Button>
           {['overview', 'sites', 'templates', 'compliance', 'analytics'].map((section) => (
             <Button
               key={section}
@@ -297,17 +291,6 @@ const OrgAdminDashboard = () => {
           </CardContent>
         </Card>
       )}
-      
-      {/* QR Scan Action Sheet */}
-      <QRScanActionSheet
-        open={qrScanOpen}
-        onOpenChange={setQrScanOpen}
-        equipmentId="CAT-789C-001"
-        equipmentName="Haul Truck CAT 789C"
-        category="Haul Truck"
-        siteName="North Mining Site"
-        status="Active"
-      />
     </div>
   );
 };

@@ -8,9 +8,8 @@ import { useOffline } from '@/contexts/OfflineContext';
 import { 
   BarChart3, TrendingUp, TrendingDown, AlertTriangle, 
   Users, Calendar, Wifi, WifiOff, LogOut, Filter,
-  Clock, CheckCircle, XCircle, QrCode
+  Clock, CheckCircle, XCircle
 } from 'lucide-react';
-import { QRScanActionSheet } from '@/components/QRScanActionSheet';
 
 interface EquipmentStatus {
   id: string;
@@ -88,7 +87,6 @@ const SiteManagerDashboard = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [activeTab, setActiveTab] = useState<string>('overview');
-  const [qrScanOpen, setQrScanOpen] = useState(false);
   
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -189,11 +187,6 @@ const SiteManagerDashboard = () => {
           </div>
           
           <div className="flex items-center gap-4">
-            <Button onClick={() => setQrScanOpen(true)} className="btn-mining">
-              <QrCode className="h-4 w-4 mr-2" />
-              Scan Equipment QR
-            </Button>
-            
             {isOnline ? (
               <div className="status-online">
                 <Wifi className="h-4 w-4" />
@@ -562,17 +555,6 @@ const SiteManagerDashboard = () => {
           </Card>
         )}
       </div>
-
-      {/* QR Scan Action Sheet */}
-      <QRScanActionSheet
-        open={qrScanOpen}
-        onOpenChange={setQrScanOpen}
-        equipmentId="CAT-789C-001"
-        equipmentName="Haul Truck CAT 789C"
-        category="Haul Truck"
-        siteName="North Mining Site"
-        status="Active"
-      />
     </div>
   );
 };
