@@ -23,6 +23,7 @@ import AdminPortal from "./pages/AdminPortal";
 import SiteManagement from "./pages/SiteManagement";
 import NotificationUI from "./pages/NotificationUI";
 import OperatorHistoryView from "./pages/OperatorHistoryView";
+import InspectionFormsHistory from "./pages/InspectionFormsHistory";
 import WorkplaceExams from "./pages/WorkplaceExams";
 import NotFound from "./pages/NotFound";
 
@@ -44,6 +45,7 @@ const App = () => (
               <Route path="/operator-dashboard" element={<RoleBasedDashboard />} />
               <Route path="/qr-demo" element={<QRScanDemo />} />
               <Route path="/maintenance-history" element={<OperatorHistoryView />} />
+              <Route path="/inspection-forms-history" element={<InspectionFormsHistory />} />
               <Route path="/workplace-exams" element={<WorkplaceExams />} />
               <Route path="/equipment-selection" element={<EquipmentSelection />} />
               <Route path="/inspection-form" element={<InspectionForm />} />
