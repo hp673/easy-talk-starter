@@ -468,6 +468,56 @@ const OperatorDashboard = () => {
         </CardContent>
       </Card>
 
+      {/* History Section */}
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold mb-3 text-mining-dark">History & Records</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Maintenance History Card */}
+          <Card className="hover:shadow-md transition-shadow border-2 border-amber-200">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 bg-amber-100 rounded-lg">
+                  <Wrench className="h-5 w-5 text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-mining-dark">Maintenance History</h3>
+                  <p className="text-sm text-muted-foreground">Quick access to past inspections and repairs</p>
+                </div>
+              </div>
+              <Button 
+                className="w-full btn-mining"
+                onClick={() => navigate('/maintenance-history')}
+              >
+                <History className="h-4 w-4 mr-2" />
+                View History
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Inspection Forms History Card */}
+          <Card className="hover:shadow-md transition-shadow border-2 border-blue-200">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <ClipboardCheck className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-mining-dark">Inspection Forms History</h3>
+                  <p className="text-sm text-muted-foreground">View all submitted inspection records</p>
+                </div>
+              </div>
+              <Button 
+                className="w-full btn-mining"
+                onClick={() => navigate('/inspection-forms-history')}
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                View All →
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
       {/* Secondary Items Section */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-3 text-mining-dark">Additional Tools</h2>
@@ -507,21 +557,13 @@ const OperatorDashboard = () => {
           <Card className="hover:shadow-md transition-shadow">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <History className="h-5 w-5 text-blue-600" />
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
                 </div>
-                <h3 className="font-semibold text-mining-dark">History</h3>
+                <h3 className="font-semibold text-mining-dark">Completed Today</h3>
               </div>
-              <p className="text-2xl font-bold text-mining-dark mb-1">47</p>
-              <p className="text-sm text-muted-foreground mb-3">Past inspections</p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full"
-                onClick={() => navigate('/maintenance-history')}
-              >
-                View History
-              </Button>
+              <p className="text-2xl font-bold text-mining-dark mb-1">4</p>
+              <p className="text-sm text-muted-foreground mb-3">Inspections submitted</p>
             </CardContent>
           </Card>
         </div>
